@@ -1,44 +1,71 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>qbittorrent downloader</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">qbittorrent downloader</a>
-    </nav>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>qBittorrent Web Downloader</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+        <script src="{{ url_for('static', filename='js/jquery-3.6.4.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+        <script>
+            $(document).ready(function() {
+                setInterval(function() {
+                    location.reload();
+                }, 3000);
+            });
+        </script>
+        <style>
+            .badge {
+                display: inline-block;
+                padding: 0.25em 0.4em;
+                font-size: 75%;
+                font-weight: 700;
+                line-height: 1;
+                text-align: center;
+                white-space: nowrap;
+                vertical-align: baseline;
+                border-radius: 0.25rem;
+            }
+            .badge-primary {
+                color: #fff;
+                background-color: #007bff;
+            }
+            .badge-success {
+                color: #fff;
+                background-color: #28a745;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="text-center mt-5 mb-4">qBittorrent Web Downloader</h1>
 
-    <div class="container my-5">
-        <form method="POST">
-            <div class="form-group">
-                <label for="url">Torrent URL:</label>
-                <input type="text" class="form-control" id="url" name="url">
-            </div>
-            <button type="submit" class="btn btn-primary">Download</button>
-        </form>
-    </div>
+            {% if downloading_files %}
+            <h2>Downloading Files:</h2>
+            <ul class="list-group">
+                {% for torrent in downloading_files %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ torrent['name'] }}
+                    {% if torrent['progress'] < 1 %}
+                    <span class="badge badge-primary badge-pill">{{ '{:.0%}'.format(torrent['progress']) }}</span>
+                    {% else %}
+                    <span class="badge badge-success badge-pill">Completed</span>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
 
-    {% if message %}
-    <div class="container">
-        <div class="alert alert-danger" role="alert">
-            {{ message }}
+            {% if downloaded_files %}
+            <h2>Downloaded Files:</h2>
+            <ul class="list-group">
+                {% for torrent in downloaded_files %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ torrent['name'] }}
+                    <span class="badge badge-success badge-pill">Completed</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </div>
-    </div>
-    {% endif %}
-
-    {% if torrent_list %}
-    <div class="container my-5">
-        <h2>Downloaded Torrents</h2>
-        <ul class="list-group">
-            {% for torrent in torrent_list %}
-            <li class="list-group-item">{{ torrent['name'] }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
-    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-</body>
+    </body>
 </html>
