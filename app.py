@@ -1,8 +1,10 @@
 from flask import Flask, request, render_template
+from flask_bootstrap import Bootstrap
 import requests,os
 import json
 
 app = Flask(__name__)
+bootstrap = Bootstrap(app)
 
 # qbittorrent API相关配置
 QB_HOST = "http://intel-n100.local:8080"

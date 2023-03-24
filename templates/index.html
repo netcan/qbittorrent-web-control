@@ -3,24 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>qbittorrent downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
-    <h1>qbittorrent downloader</h1>
-    <form method="POST">
-        <label for="url">Torrent URL:</label>
-        <input type="text" id="url" name="url">
-        <button type="submit">Download</button>
-    </form>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">qbittorrent downloader</a>
+    </nav>
+
+    <div class="container my-5">
+        <form method="POST">
+            <div class="form-group">
+                <label for="url">Torrent URL:</label>
+                <input type="text" class="form-control" id="url" name="url">
+            </div>
+            <button type="submit" class="btn btn-primary">Download</button>
+        </form>
+    </div>
+
     {% if message %}
-    <p>{{ message }}</p>
+    <div class="container">
+        <div class="alert alert-danger" role="alert">
+            {{ message }}
+        </div>
+    </div>
     {% endif %}
+
     {% if torrent_list %}
-    <h2>Downloaded Torrents</h2>
-    <ul>
-        {% for torrent in torrent_list %}
-        <li>{{ torrent['name'] }}</li>
-        {% endfor %}
-    </ul>
+    <div class="container my-5">
+        <h2>Downloaded Torrents</h2>
+        <ul class="list-group">
+            {% for torrent in torrent_list %}
+            <li class="list-group-item">{{ torrent['name'] }}</li>
+            {% endfor %}
+        </ul>
+    </div>
     {% endif %}
+
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 </body>
 </html>
