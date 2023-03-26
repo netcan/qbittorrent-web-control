@@ -1,20 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Table from './Table';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 const TorrentList: React.FC = () => {
-    const columns = useMemo(() => [
-        {
-            Header: '名称',
-            accessor: 'name',
-        },
-        {
-            Header: '大小',
-            accessor: 'total_size',
-        },
-        {
-            Header: '进度',
-            accessor: 'progress',
-        },
+    const columns: GridColDef[] = useMemo(() => [
+        { field: 'name', headerName: 'Name', flex: 1 },
+        { field: 'total_size', headerName: 'Size', flex: 0.5 },
+        { field: 'progress', headerName: 'Progress', flex: 0.5 },
     ], []);
     const [torrents, setTorrents] = useState([]);
     const fetchTorrents = async () => {
@@ -22,7 +13,11 @@ const TorrentList: React.FC = () => {
             const response = await fetch('/api/v2/torrents/info');
             if (response.ok) {
                 const torrentsData = await response.json();
-                setTorrents(torrentsData);
+                const torrentsWithId = torrentsData.map((torrent: any) => {
+                    const { hash: id, ...res } = torrent;
+                    return {id, ...res};
+                })
+                setTorrents(torrentsWithId);
             } else {
                 console.error('Failed to fetch torrents data');
             }
@@ -32,9 +27,22 @@ const TorrentList: React.FC = () => {
     };
     useEffect(() => {
         fetchTorrents();
+        setInterval(fetchTorrents, 5000);
     }, []);
 
-    return <Table columns={columns} data={torrents}/>;
+    return <DataGrid
+        rows={torrents}
+        columns={columns}
+        initialState={{
+            pagination: {
+                paginationModel: {
+                    pageSize: 100
+                }
+            },
+        }}
+        density = 'compact'
+        autoHeight
+    />;
 };
 
 export default TorrentList;
