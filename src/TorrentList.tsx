@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Table } from '@nextui-org/react';
+import React, { useState, useEffect } from 'react';
+import { DataTable, DataTableSelectionChangeEvent, DataTableSelection } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 
 type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
@@ -77,8 +78,10 @@ const TorrentList: React.FC = () => {
         { field: 'progress', label: 'Progress' },
     ];
     const [torrents, setTorrents] = useState<Torrent[]>([]);
+    const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
     const fetchTorrents = async () => {
         try {
+            // console.log('selectedTorrents=', selectedTorrents);
             const response = await fetch('/api/v2/torrents/info');
             if (response.ok) {
                 const torrentsData: Torrent[] = await response.json();
@@ -92,38 +95,31 @@ const TorrentList: React.FC = () => {
     };
     useEffect(() => {
         fetchTorrents();
-        setInterval(fetchTorrents, 5000);
+        const id = setInterval(fetchTorrents, 5000);
+        return () => { clearInterval(id) };
     }, []);
 
     return (
-        <Table
-            sticked
-            compact
-            striped
-            aria-label="TorrentList"
-            selectionMode="multiple"
-            animated={false}
+        <DataTable
+            value={torrents} size='small'
+            stripedRows paginator removableSort
+            dataKey="hash"
+            selectionMode="checkbox"
+            resizableColumns columnResizeMode="expand"
+            reorderableColumns
+            scrollable scrollHeight='flex'
+            selection={selectedTorrents}
+            onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent[]>) => setSelectedTorrents(e.value)}
+            dragSelection
+            stateStorage='local'
+            stateKey="torrent-list-state"
+            rows={200} rowsPerPageOptions={[50, 100, 200, 500]}
         >
-            <Table.Header columns={columns}>
-                {(column) => (
-                    <Table.Column key={column.field}>{column.label}</Table.Column>
-                )}
-            </Table.Header>
-            <Table.Body items={torrents}>
-                {(item: Torrent) => (
-                    <Table.Row key={item.hash}>
-                        {(columnKey) => <Table.Cell>{item[columnKey as keyof Torrent]}</Table.Cell>}
-                    </Table.Row>
-                )}
-            </Table.Body>
-            <Table.Pagination
-                shadow
-                noMargin
-                align="center"
-                rowsPerPage={50}
-                onPageChange={(page) => console.log({ page })}
-            />
-        </Table>
+            <Column selectionMode="multiple"></Column>
+            { columns.map((col) => (
+                <Column sortable key={col.field} field={col.field} header={col.label} />
+            )) }
+        </DataTable>
     );
 };
 
