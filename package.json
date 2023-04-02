@@ -13,6 +13,7 @@
     "@types/react": "^18.0.29",
     "@types/react-dom": "^18.0.11",
     "js-cookie": "^3.0.1",
+    "primeflex": "^3.3.0",
     "primeicons": "^6.0.1",
     "primereact": "^9.2.2",
     "react": "^18.2.0",

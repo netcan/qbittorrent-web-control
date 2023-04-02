@@ -1,5 +1,5 @@
 import Login from './Login';
-import Greeting from './Greeting';
+import MainWindow from './MainWindow';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const App = () => {
@@ -7,7 +7,7 @@ const App = () => {
         <div>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<Greeting/>} />
+                    <Route path="/" element={<MainWindow/>} />
                     <Route path="/login" element={<Login/>} />
                 </Routes>
             </BrowserRouter>
