@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
 import { DataTable, DataTableSelectionChangeEvent, DataTableSelection } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressBar } from 'primereact/progressbar';
 
-type TorrentState =
+export type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
     | "missingFiles"       // Torrent data files is missing
     | "uploading"          // Torrent is being seeded and data is being transferred
@@ -24,7 +24,7 @@ type TorrentState =
     | "moving"             // Torrent is moving to another location
     | "unknown";           // Unknown status
 
-interface Torrent {
+export interface Torrent {
     added_on: number,                    // Time (Unix Epoch) when the torrent was added to the client
     amount_left: number,                 // Amount of data left to download (bytes)
     auto_tmm: boolean,                   // Whether this torrent is managed by Automatic Torrent Management
@@ -143,7 +143,29 @@ const parseField = (field: keyof Torrent) => {
     };
 }
 
-const TorrentList: React.FC = () => {
+export const fetchTorrents = (setter: Dispatch<SetStateAction<Torrent[]>>) => {
+    return async () => {
+        try {
+            const response = await fetch('/api/v2/torrents/info');
+            if (response.ok) {
+                const torrentsData: Torrent[] = await response.json();
+                setter(torrentsData);
+            } else {
+                console.error('Failed to fetch torrents data');
+            }
+        } catch (error) {
+            console.error('Error while fetching torrents data', error);
+        }
+    };
+}
+
+interface TorrentListProps {
+    torrents: Torrent[],
+    selectedTorrents: DataTableSelection<Torrent[]>,
+    setSelectedTorrents: Dispatch<SetStateAction<DataTableSelection<Torrent[]>>>
+};
+
+const TorrentList: React.FC<TorrentListProps> = ({ torrents, selectedTorrents, setSelectedTorrents }) => {
     const columns: { field: keyof Torrent, label: string }[] = [
         { field: 'name', label: 'Name' },
         { field: 'total_size', label: 'Size' },
@@ -159,29 +181,7 @@ const TorrentList: React.FC = () => {
         { field: 'last_activity', label: 'Last Activity' },
         { field: 'completion_on', label: 'Completed On' },
     ];
-    const [torrents, setTorrents] = useState<Torrent[]>([]);
-    const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
     const dt = useRef<DataTable<Torrent[]>>(null);
-
-    const fetchTorrents = async () => {
-        try {
-            // console.log('selectedTorrents=', selectedTorrents);
-            const response = await fetch('/api/v2/torrents/info');
-            if (response.ok) {
-                const torrentsData: Torrent[] = await response.json();
-                setTorrents(torrentsData);
-            } else {
-                console.error('Failed to fetch torrents data');
-            }
-        } catch (error) {
-            console.error('Error while fetching torrents data', error);
-        }
-    };
-    useEffect(() => {
-        fetchTorrents();
-        const id = setInterval(fetchTorrents, 5000);
-        return () => { clearInterval(id) };
-    }, []);
 
     return (
         <DataTable
