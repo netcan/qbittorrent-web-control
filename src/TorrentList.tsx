@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DataTable, DataTableSelectionChangeEvent, DataTableSelection } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { ProgressBar } from 'primereact/progressbar';
 
 type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
@@ -71,14 +72,97 @@ interface Torrent {
     upspeed: number,                     // Torrent upload speed (bytes/s)
 };
 
+const parseSize = (size: number) => {
+    const sizeUnit = [ 'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB' ];
+    let sizeUnitIdx = 0;
+    while (size > 1024) {
+        sizeUnitIdx++;
+        size /= 1024;
+    }
+
+    return `${size.toFixed(2)} ${sizeUnit[sizeUnitIdx]}`;
+}
+
+const parseSpeed = (size: number) => {
+    return `${parseSize(size)}/s`;
+}
+
+const parseEpoch = (epoch: number) => {
+    return new Date(epoch * 1000).toLocaleString('zh');
+}
+
+const parseState = (state: TorrentState) => {
+    switch (state) {
+        case 'uploading':
+        case 'stalledUP':
+            return (<span className='pi pi-arrow-circle-up'/>);
+        case 'downloading':
+        case 'stalledDL':
+            return (<span className='pi pi-arrow-circle-down'/>);
+        case 'pausedUP':
+        case 'pausedDL':
+            return (<span className='pi pi-pause'/>);
+        case 'checkingUP':
+        case 'checkingDL':
+        case 'checkingResumeData':
+            return (<span className='pi pi-sync'/>);
+        case 'error':
+        case 'missingFiles':
+            return (<span className='pi pi-exclamation-triangle'/>);
+    }
+};
+
+const parseField = (field: keyof Torrent) => {
+    return (torrent: Torrent) => {
+        switch (field) {
+            case 'progress':
+                return (<ProgressBar value={torrent[field] * 100}/>);
+            case 'size':
+            case 'total_size':
+            case 'uploaded':
+                return parseSize(torrent[field]);
+            case 'ratio':
+                return torrent[field].toFixed(2);
+            case 'num_seeds':
+                return `${torrent[field]} (${torrent.num_complete})`;
+            case 'num_leechs':
+                return `${torrent[field]} (${torrent.num_incomplete})`;
+            case 'dlspeed':
+            case 'upspeed':
+                return parseSpeed(torrent[field]);
+            case 'added_on':
+            case 'completion_on':
+            case 'last_activity':
+            case 'seen_complete':
+                return parseEpoch(torrent[field]);
+            case 'name':
+                return (<>{parseState(torrent.state)} {torrent[field]}</>);
+            default:
+                return torrent[field];
+        }
+    };
+}
+
 const TorrentList: React.FC = () => {
-    const columns = [
+    const columns: { field: keyof Torrent, label: string }[] = [
         { field: 'name', label: 'Name' },
         { field: 'total_size', label: 'Size' },
         { field: 'progress', label: 'Progress' },
+        { field: 'ratio', label: 'Ratio' },
+        { field: 'num_seeds', label: 'Seeder' },
+        { field: 'num_leechs', label: 'Leecher' },
+        { field: 'dlspeed', label: 'Down Speed' },
+        { field: 'upspeed', label: 'Up Speed' },
+        { field: 'uploaded', label: 'Uploaded' },
+        { field: 'added_on', label: 'Added On' },
+        { field: 'save_path', label: 'Download Path' },
+        { field: 'last_activity', label: 'Last Activity' },
+        { field: 'completion_on', label: 'Completed On' },
     ];
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
+    const dt = useRef<DataTable<Torrent[]>>(null);
+
     const fetchTorrents = async () => {
         try {
             // console.log('selectedTorrents=', selectedTorrents);
@@ -102,8 +186,10 @@ const TorrentList: React.FC = () => {
     return (
         <DataTable
             value={torrents} size='small'
-            stripedRows paginator removableSort
+            stripedRows paginator
+            removableSort
             dataKey="hash"
+            ref={dt}
             selectionMode="checkbox"
             resizableColumns columnResizeMode="expand"
             reorderableColumns
@@ -117,7 +203,11 @@ const TorrentList: React.FC = () => {
         >
             <Column selectionMode="multiple"></Column>
             { columns.map((col) => (
-                <Column sortable key={col.field} field={col.field} header={col.label} />
+                <Column sortable
+                    header={col.label}
+                    key={col.field} field={col.field}
+                    body={parseField(col.field)}
+                    />
             )) }
         </DataTable>
     );
