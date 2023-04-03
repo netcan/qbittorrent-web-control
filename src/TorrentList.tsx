@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef, Dispatch, SetStateAction } from 'react';
-import { DataTable, DataTableSelectionChangeEvent, DataTableSelection } from 'primereact/datatable';
+import React, { useRef, Dispatch, SetStateAction } from 'react';
+import { DataTable, DataTableSelectionChangeEvent,
+    DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressBar } from 'primereact/progressbar';
 
@@ -162,10 +163,11 @@ export const fetchTorrents = (setter: Dispatch<SetStateAction<Torrent[]>>) => {
 interface TorrentListProps {
     torrents: Torrent[],
     selectedTorrents: DataTableSelection<Torrent[]>,
+    filters: DataTableFilterMeta,
     setSelectedTorrents: Dispatch<SetStateAction<DataTableSelection<Torrent[]>>>
 };
 
-const TorrentList: React.FC<TorrentListProps> = ({ torrents, selectedTorrents, setSelectedTorrents }) => {
+const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTorrents, setSelectedTorrents }) => {
     const columns: { field: keyof Torrent, label: string }[] = [
         { field: 'name', label: 'Name' },
         { field: 'total_size', label: 'Size' },
@@ -191,8 +193,11 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, selectedTorrents, s
             dataKey="hash"
             ref={dt}
             selectionMode="checkbox"
-            resizableColumns columnResizeMode="expand"
+            resizableColumns
+            /* columnResizeMode="expand" */
             reorderableColumns
+            filters={filters}
+            globalFilterFields={['name', 'save_path']}
             scrollable scrollHeight='flex'
             selection={selectedTorrents}
             onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent[]>) => setSelectedTorrents(e.value)}
@@ -207,7 +212,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, selectedTorrents, s
                     header={col.label}
                     key={col.field} field={col.field}
                     body={parseField(col.field)}
-                    />
+                />
             )) }
         </DataTable>
     );

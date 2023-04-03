@@ -1,22 +1,48 @@
 import TorrentList, {Torrent, fetchTorrents} from './TorrentList';
-import React, { useState, useEffect } from 'react';
-import { DataTableSelection } from 'primereact/datatable';
+import React, { useState, useEffect, ChangeEvent } from 'react';
+import { DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
+import { Menubar } from 'primereact/menubar';
+import { InputText } from 'primereact/inputtext';
+import { FilterMatchMode } from 'primereact/api';
 
 const MainWindow: React.FC = () => {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
+    const [filters, setFilters] = useState<DataTableFilterMeta>({
+        global: { value: '', matchMode: FilterMatchMode.CONTAINS },
+    });
+    const searchWordOnChange = (e: ChangeEvent<HTMLInputElement>) => {
+        let _filters = {...filters};
+        if ('value' in _filters['global']) {
+            _filters['global'].value = e.target.value;
+        }
+        setFilters(_filters);
+    };
+
     useEffect(() => {
         fetchTorrents(setTorrents)();
         const id = setInterval(fetchTorrents(setTorrents), 5000);
         return () => { clearInterval(id) };
     }, []);
 
+    const searchInput = (
+        <InputText placeholder="Search"
+            onChange={searchWordOnChange}
+            type="text" className="w-full" />
+    );
 
-    return <TorrentList
-        torrents={torrents}
-        selectedTorrents={selectedTorrents}
-        setSelectedTorrents={setSelectedTorrents}
-    />;
+    return (
+        <div className="grid">
+            <Menubar className='col-12' end={searchInput}/>
+            <div className='col-12'>
+                <TorrentList
+                    torrents={torrents}
+                    filters={filters}
+                    selectedTorrents={selectedTorrents}
+                    setSelectedTorrents={setSelectedTorrents}/>
+            </div>
+        </div>
+    );
 };
 
 export default MainWindow;
