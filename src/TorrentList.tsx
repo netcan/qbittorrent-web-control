@@ -113,6 +113,10 @@ const parseState = (state: TorrentState) => {
     }
 };
 
+const getHostName = (url: string) => {
+    return url ? new URL(url).hostname : '';
+}
+
 const parseField = (field: keyof Torrent) => {
     return (torrent: Torrent) => {
         switch (field) {
@@ -136,6 +140,8 @@ const parseField = (field: keyof Torrent) => {
             case 'last_activity':
             case 'seen_complete':
                 return parseEpoch(torrent[field]);
+            case 'tracker':
+                return getHostName(torrent[field]);
             case 'name':
                 return (<>{parseState(torrent.state)} {torrent[field]}</>);
             default:
@@ -169,6 +175,7 @@ interface TorrentListProps {
 
 const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTorrents, setSelectedTorrents }) => {
     const columns: { field: keyof Torrent, label: string }[] = [
+        { field: 'tracker', label: 'Tracker' },
         { field: 'name', label: 'Name' },
         { field: 'total_size', label: 'Size' },
         { field: 'progress', label: 'Progress' },
@@ -197,7 +204,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
             /* columnResizeMode="expand" */
             reorderableColumns
             filters={filters}
-            globalFilterFields={['name', 'save_path']}
+            globalFilterFields={['name', 'save_path', 'tracker']}
             scrollable scrollHeight='flex'
             selection={selectedTorrents}
             onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent[]>) => setSelectedTorrents(e.value)}
