@@ -4,6 +4,7 @@ import { DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Menubar } from 'primereact/menubar';
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode } from 'primereact/api';
+import { Splitter, SplitterPanel } from 'primereact/splitter';
 
 const MainWindow: React.FC = () => {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
@@ -34,13 +35,16 @@ const MainWindow: React.FC = () => {
     return (
         <div className="grid">
             <Menubar className='col-12' end={searchInput}/>
-            <div className='col-12'>
-                <TorrentList
-                    torrents={torrents}
-                    filters={filters}
-                    selectedTorrents={selectedTorrents}
-                    setSelectedTorrents={setSelectedTorrents}/>
-            </div>
+            <Splitter className='col-12'>
+                <SplitterPanel className="flex align-items-center justify-content-center" size={20} minSize={10}>Panel 1</SplitterPanel>
+                <SplitterPanel className="flex align-items-center justify-content-center" size={80}>
+                    <TorrentList
+                        torrents={torrents}
+                        filters={filters}
+                        selectedTorrents={selectedTorrents}
+                        setSelectedTorrents={setSelectedTorrents}/>
+                </SplitterPanel>
+            </Splitter>
         </div>
     );
 };
