@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Dispatch, SetStateAction  } from "react";
 import { Tree, TreeNodeTemplateOptions } from 'primereact/tree';
+import { DataTableFilterMeta } from 'primereact/datatable';
 import { Badge } from 'primereact/badge';
 import TreeNode from "primereact/treenode";
 import * as Torrent from './Torrent';
-import { getHostName } from "./Utils";
+import { createFilter, getHostName, isSameClass } from "./Utils";
 import path from "path-browserify";
 
 interface SideBarProps {
     torrents: Torrent.Torrent[],
+    setFilters: Dispatch<SetStateAction<DataTableFilterMeta>>,
 };
 
 class ItemInfo {
@@ -70,7 +72,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
         {
             const tracker = getHostName(torrent.tracker);
             if (! (tracker in trackerData)) {
-                trackerData[tracker] = new ItemInfo;
+                trackerData[tracker] = new TrackersInfo();
                 trackers.children?.push(
                     getItem(tracker, tracker, 'pi-server', trackerData)
                 );
@@ -86,7 +88,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
                 }
                 const next = path.join(folderPath, folder);
                 if (! (next in folderData)) {
-                    folderData[next] = new ItemInfo();
+                    folderData[next] = new FoldersInfo();
                     const folderItem = getItem(next, folder, 'pi-folder', folderData, []);
                     if (folderPath === '') {
                         folders.children?.push(folderItem)
@@ -109,12 +111,37 @@ const getItems = (torrents: Torrent.Torrent[]) => {
 };
 
 
-const SideBar: React.FC<SideBarProps> = ({ torrents }) => {
+const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
     const [nodes, setNodes] = useState<TreeNode[]>([]);
     const [selectedItemKey, setSelectedItemKey] = useState('');
+    const [lastSelectedItem, setLastSelectedItem] = useState<TreeNode>();
 
-    const onSelectionItem = (key: string) => {
-        setSelectedItemKey(key);
+    const setFilter = <T extends ItemInfo>(info: T, value: string = '') => {
+        if (! info) { return; }
+        setFilters((prev) => {
+            if (info instanceof StatusInfo) {
+                return { ...prev, state: createFilter(value) };
+            } else if (info instanceof TrackersInfo) {
+                return { ...prev, tracker: createFilter(value) };
+            } else if (info instanceof FoldersInfo) {
+                return { ...prev, save_path: createFilter(value) };
+            }
+            return prev;
+        });
+    };
+
+    const onSelect = (node: TreeNode) => {
+        if (lastSelectedItem === node) {
+            return;
+        }
+        // clear last selected item filter
+        if (! isSameClass(lastSelectedItem?.data, node.data)) {
+            setFilter(lastSelectedItem?.data);
+        }
+
+        setFilter(node.data, node.key as string);
+        setSelectedItemKey(node.key as string);
+        setLastSelectedItem(node);
     };
 
     useEffect(() => {
@@ -135,7 +162,7 @@ const SideBar: React.FC<SideBarProps> = ({ torrents }) => {
             id="sidebar"
             selectionMode="single"
             selectionKeys={selectedItemKey}
-            onSelectionChange={(e) => onSelectionItem(e.value as string)}
+            onSelect={(e) => onSelect(e.node)}
             nodeTemplate={parseContent}
         />
     );

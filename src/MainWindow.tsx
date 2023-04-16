@@ -4,23 +4,24 @@ import React, { useState, useEffect, ChangeEvent } from 'react';
 import { DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Menubar } from 'primereact/menubar';
 import { InputText } from 'primereact/inputtext';
-import { FilterMatchMode } from 'primereact/api';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import SideBar from './SideBar';
+import {createFilter} from './Utils';
 
 const MainWindow: React.FC = () => {
     const infoWidgetHeight = '90vh';
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
     const [filters, setFilters] = useState<DataTableFilterMeta>({
-        global: { value: '', matchMode: FilterMatchMode.CONTAINS },
+        global: createFilter(),
+        tracker: createFilter(),
+        state: createFilter(),
+        save_path: createFilter(),
     });
     const searchWordOnChange = (e: ChangeEvent<HTMLInputElement>) => {
-        let _filters = {...filters};
-        if ('value' in _filters['global']) {
-            _filters['global'].value = e.target.value;
-        }
-        setFilters(_filters);
+        setFilters((prev) => {
+            return {...prev, global: createFilter(e.target.value)};
+        });
     };
 
     useEffect(() => {
@@ -42,7 +43,10 @@ const MainWindow: React.FC = () => {
                 <SplitterPanel
                     style={{ overflow: 'auto', height: infoWidgetHeight }}
                     size={20}>
-                    <SideBar torrents={torrents}/>
+                    <SideBar
+                        torrents={torrents}
+                        setFilters={setFilters}
+                    />
                 </SplitterPanel>
 
                 <SplitterPanel
