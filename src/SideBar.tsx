@@ -15,12 +15,16 @@ class ItemInfo {
     size: number = 0;
 };
 
-type ItemData = {
-    [key: string]: ItemInfo
+class StatusInfo extends ItemInfo {};
+class TrackersInfo extends ItemInfo {};
+class FoldersInfo extends ItemInfo {};
+
+type ItemData<T extends ItemInfo> = {
+    [key: string]: T
 };
 
-const getItem = (keyName: string, labelName: string, icon: string,
-                 data: ItemData, children: TreeNode[] = []): TreeNode => {
+const getItem = <T extends ItemInfo>(keyName: string, labelName: string, icon: string,
+                                     data: ItemData<T> = {}, children: TreeNode[] = []): TreeNode => {
     return {
         key: keyName,
         label: `${labelName}`,
@@ -31,19 +35,30 @@ const getItem = (keyName: string, labelName: string, icon: string,
 }
 
 const getItems = (torrents: Torrent.Torrent[]) => {
-    const statusData: ItemData = {
-        'download': new ItemInfo(),
-        'pause': new ItemInfo(),
-        'upload': new ItemInfo(),
-        'check': new ItemInfo(),
-        'active': new ItemInfo(),
-        'error': new ItemInfo(),
+    const statusData: ItemData<StatusInfo> = {
+        'download': new StatusInfo(),
+        'pause': new StatusInfo(),
+        'upload': new StatusInfo(),
+        'check': new StatusInfo(),
+        'active': new StatusInfo(),
+        'error': new StatusInfo(),
     };
-    const trackerData: ItemData = { };
-    const folderData: ItemData = { };
+    const status = getItem('status', 'All', 'pi-home', {}, [
+        getItem('download', 'Downloading', Torrent.downloadIcon, statusData),
+        getItem('pause',    'Paused',      Torrent.pausedIcon,   statusData),
+        getItem('upload',   'Seeding',     Torrent.uploadIcon,   statusData),
+        getItem('check',    'Checking',    Torrent.checkingIcon, statusData),
+        getItem('active',   'Active',      Torrent.activeIcon,   statusData),
+        getItem('error',    'Error',       Torrent.errorIcon,    statusData),
+    ]);
 
-    const trackerSet = new Set<string>();
-    const folderSet = new Set<string>();
+    const trackerData: ItemData<TrackersInfo> = { };
+    const trackers = getItem('trackers', 'Trackers', 'pi-globe');
+
+    const folderData: ItemData<FoldersInfo> = { };
+    let folderNodes: { [key: string]: TreeNode; } = {};
+    const folders = getItem('folders', 'Folders', 'pi-folder');
+
     for (const torrent of torrents) {
         Torrent.isDownload(torrent) && ++statusData['download'].counter;
         Torrent.isPaused(torrent)   && ++statusData['pause'].counter;
@@ -54,15 +69,16 @@ const getItems = (torrents: Torrent.Torrent[]) => {
 
         {
             const tracker = getHostName(torrent.tracker);
-            if (! trackerSet.has(tracker)) {
-                trackerSet.add(tracker)
+            if (! (tracker in trackerData)) {
                 trackerData[tracker] = new ItemInfo;
+                trackers.children?.push(
+                    getItem(tracker, tracker, 'pi-server', trackerData)
+                );
             }
             ++trackerData[tracker].counter;
         }
 
         {
-            folderSet.add(torrent.save_path);
             let folderPath = '';
             for (const folder of torrent.save_path.split('/')) { // TODO: handle win path
                 if (folder === '') {
@@ -70,47 +86,18 @@ const getItems = (torrents: Torrent.Torrent[]) => {
                 }
                 const next = path.join(folderPath, folder);
                 if (! (next in folderData)) {
-                    folderData[next] = new ItemInfo;
+                    folderData[next] = new ItemInfo();
+                    const folderItem = getItem(next, folder, 'pi-folder', folderData, []);
+                    if (folderPath === '') {
+                        folders.children?.push(folderItem)
+                    } else {
+                        folderNodes[folderPath].children?.push(folderItem);
+                    }
+                    folderNodes[next] = folderItem;
                 }
                 ++folderData[next].counter;
                 folderPath = next;
             }
-        }
-    }
-
-    const status = getItem('status', 'All', 'pi-home', {}, [
-        getItem('download', 'Downloading', Torrent.downloadIcon, statusData),
-        getItem('pause',    'Paused',      Torrent.pausedIcon,   statusData),
-        getItem('upload',   'Seeding',     Torrent.uploadIcon,   statusData),
-        getItem('check',    'Checking',    Torrent.checkingIcon, statusData),
-        getItem('active',   'Active',      Torrent.activeIcon,   statusData),
-        getItem('error',    'Error',       Torrent.errorIcon,    statusData),
-    ]);
-
-    const trackersList = [...trackerSet];
-    const trackers = getItem('trackers', 'Trackers', 'pi-globe', {},
-                            trackersList.map((tracker) => {
-                                return getItem(tracker, tracker, 'pi-server', trackerData)
-                            }));
-
-    const folders = getItem('folders', 'Folders', 'pi-folder', {}, []);
-    const foldersList = [...folderSet];
-
-    for (const savedPath of foldersList) {
-        let folderItem = folders;
-        for (const folder of savedPath.split('/')) {
-            if (folder === '') {
-                continue;
-            }
-            let next = folderItem.children?.find((getItem) => {
-                return getItem.label?.includes(folder);
-            });
-            if (!next) {
-                const key = folderItem === folders ? folder : path.join(folderItem.key as string, folder);
-                next = getItem(key, folder, 'pi-folder', folderData, []);
-                folderItem.children?.push(next);
-            }
-            folderItem = next;
         }
     }
 
