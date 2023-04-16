@@ -14,9 +14,6 @@ const MainWindow: React.FC = () => {
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
     const [filters, setFilters] = useState<DataTableFilterMeta>({
         global: createFilter(),
-        tracker: createFilter(),
-        state: createFilter(),
-        save_path: createFilter(),
     });
     const searchWordOnChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFilters((prev) => {

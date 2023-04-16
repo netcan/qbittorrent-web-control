@@ -3,6 +3,7 @@ import { Tree, TreeNodeTemplateOptions } from 'primereact/tree';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { Badge } from 'primereact/badge';
 import TreeNode from "primereact/treenode";
+import { FilterMatchMode, FilterService } from "primereact/api";
 import * as Torrent from './Torrent';
 import { createFilter, getHostName, isSameClass } from "./Utils";
 import path from "path-browserify";
@@ -116,13 +117,23 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
     const [selectedItemKey, setSelectedItemKey] = useState('');
     const [lastSelectedItem, setLastSelectedItem] = useState<TreeNode>();
 
+    const createTrackerFilter = (tracker: string) => {
+        FilterService.register('trackerFilter', (tracker, value) => {
+            return getHostName(tracker) == value;
+        });
+        return {
+            value: tracker,
+            matchMode: 'trackerFilter' as FilterMatchMode
+        };
+    };
+
     const setFilter = <T extends ItemInfo>(info: T, value: string = '') => {
         if (! info) { return; }
         setFilters((prev) => {
             if (info instanceof StatusInfo) {
                 return { ...prev, state: createFilter(value) };
             } else if (info instanceof TrackersInfo) {
-                return { ...prev, tracker: createFilter(value) };
+                return { ...prev, tracker: createTrackerFilter(value) };
             } else if (info instanceof FoldersInfo) {
                 return { ...prev, save_path: createFilter(value) };
             }
