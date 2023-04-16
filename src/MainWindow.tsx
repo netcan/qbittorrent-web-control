@@ -1,4 +1,5 @@
-import TorrentList, {Torrent, fetchTorrents} from './TorrentList';
+import TorrentList from './TorrentList';
+import { Torrent, fetchTorrents } from './Torrent';
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import { DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Menubar } from 'primereact/menubar';
