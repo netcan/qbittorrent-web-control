@@ -3,32 +3,25 @@ import { DataTable, DataTableSelectionChangeEvent,
     DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressBar } from 'primereact/progressbar';
-import { Torrent, TorrentState  } from './Torrent';
+import * as Torrent from './Torrent';
 import { parseSpeed, parseEpoch, parseSize, getHostName } from './Utils';
 
-const parseState = (state: TorrentState) => {
-    switch (state) {
-        case 'uploading':
-        case 'stalledUP':
-            return (<span className='pi pi-arrow-circle-up'/>);
-        case 'downloading':
-        case 'stalledDL':
-            return (<span className='pi pi-arrow-circle-down'/>);
-        case 'pausedUP':
-        case 'pausedDL':
-            return (<span className='pi pi-pause'/>);
-        case 'checkingUP':
-        case 'checkingDL':
-        case 'checkingResumeData':
-            return (<span className='pi pi-sync'/>);
-        case 'error':
-        case 'missingFiles':
-            return (<span className='pi pi-exclamation-triangle'/>);
+export function stateIcon(torrent: Torrent.Torrent) {
+    if (Torrent.isDownload(torrent)) {
+        return Torrent.downloadIcon;
+    } else if (Torrent.isUpload(torrent)) {
+        return Torrent.uploadIcon;
+    } else if (Torrent.isPaused(torrent)) {
+        return Torrent.pausedIcon;
+    } else if (Torrent.isChecking(torrent)) {
+        return Torrent.checkingIcon;
+    } else if (Torrent.isError(torrent)) {
+        return Torrent.errorIcon;
     }
-};
+}
 
-const parseField = (field: keyof Torrent) => {
-    return (torrent: Torrent) => {
+const parseField = (field: keyof Torrent.Torrent) => {
+    return (torrent: Torrent.Torrent) => {
         switch (field) {
             case 'progress':
                 return (<ProgressBar value={torrent[field] * 100}/>);
@@ -53,7 +46,7 @@ const parseField = (field: keyof Torrent) => {
             case 'tracker':
                 return getHostName(torrent[field]);
             case 'name':
-                return (<>{parseState(torrent.state)} {torrent[field]}</>);
+                return (<><span className={`pi ${stateIcon(torrent)}`}/> {torrent[field]}</>);
             default:
                 return torrent[field];
         }
@@ -61,14 +54,14 @@ const parseField = (field: keyof Torrent) => {
 }
 
 interface TorrentListProps {
-    torrents: Torrent[],
-    selectedTorrents: DataTableSelection<Torrent[]>,
+    torrents: Torrent.Torrent[],
+    selectedTorrents: DataTableSelection<Torrent.Torrent[]>,
     filters: DataTableFilterMeta,
-    setSelectedTorrents: Dispatch<SetStateAction<DataTableSelection<Torrent[]>>>
+    setSelectedTorrents: Dispatch<SetStateAction<DataTableSelection<Torrent.Torrent[]>>>
 };
 
 const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTorrents, setSelectedTorrents }) => {
-    const columns: { field: keyof Torrent, label: string }[] = [
+    const columns: { field: keyof Torrent.Torrent, label: string }[] = [
         { field: 'tracker', label: 'Tracker' },
         { field: 'name', label: 'Name' },
         { field: 'total_size', label: 'Size' },
@@ -84,7 +77,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
         { field: 'last_activity', label: 'Last Activity' },
         { field: 'completion_on', label: 'Completed On' },
     ];
-    const dt = useRef<DataTable<Torrent[]>>(null);
+    const dt = useRef<DataTable<Torrent.Torrent[]>>(null);
 
     return (
         <DataTable
@@ -101,7 +94,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
             globalFilterFields={['name', 'save_path', 'tracker']}
             scrollable scrollHeight='flex'
             selection={selectedTorrents}
-            onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent[]>) => setSelectedTorrents(e.value)}
+            onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent.Torrent[]>) => setSelectedTorrents(e.value)}
             dragSelection
             stateStorage='local'
             stateKey="torrent-list-state"

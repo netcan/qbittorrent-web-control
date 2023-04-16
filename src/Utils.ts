@@ -19,6 +19,6 @@ export function parseEpoch(epoch: number) {
 }
 
 export function getHostName(url: string) {
-    return url ? new URL(url).hostname : '';
+    return url ? new URL(url).hostname : 'unknown';
 }
 

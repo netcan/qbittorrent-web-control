@@ -67,19 +67,48 @@ export interface Torrent {
     upspeed: number,                     // Torrent upload speed (bytes/s)
 };
 
-export function fetchTorrents<T extends (_: Torrent[]) => unknown>(setter: T) {
-    return async () => {
-        try {
-            const response = await fetch('/api/v2/torrents/info');
-            if (response.ok) {
-                const torrentsData: Torrent[] = await response.json();
-                setter(torrentsData);
-            } else {
-                console.error('Failed to fetch torrents data');
-            }
-        } catch (error) {
-            console.error('Error while fetching torrents data', error);
+export async function fetchTorrents<T extends (_: Torrent[]) => unknown>(setter: T) {
+    try {
+        const response = await fetch('/api/v2/torrents/info');
+        if (response.ok) {
+            const torrentsData: Torrent[] = await response.json();
+            setter(torrentsData);
+        } else {
+            console.error('Failed to fetch torrents data');
         }
-    };
+    } catch (error) {
+        console.error('Error while fetching torrents data', error);
+    }
 }
+
+export function isDownload(torrent: Torrent) {
+    return ['downloading', 'metaDL', 'stalledDL', 'queuedDL', 'forcedDL'].includes(torrent.state);
+}
+
+export function isUpload(torrent: Torrent) {
+    return ['uploading', 'stalledUP', 'queuedUP', 'forcedUP'].includes(torrent.state);
+}
+
+export function isActivate(torrent: Torrent) {
+    return ['downloading', 'metaDL', 'uploading'].includes(torrent.state);
+}
+
+export function isPaused(torrent: Torrent) {
+    return ['pausedDL', 'pausedUP'].includes(torrent.state);
+}
+
+export function isChecking(torrent: Torrent) {
+    return ['checkingUP', 'checkingDL', 'checkingResumeData'].includes(torrent.state);
+}
+
+export function isError(torrent: Torrent) {
+    return ['error', 'missingFiles'].includes(torrent.state);
+}
+
+export const downloadIcon = 'pi-arrow-circle-down';
+export const uploadIcon = 'pi-arrow-circle-up';
+export const activeIcon = 'pi-arrow-right-arrow-left';
+export const pausedIcon = 'pi-pause';
+export const checkingIcon = 'pi-sync';
+export const errorIcon = 'pi-exclamation-triangle';
 

@@ -6,7 +6,7 @@ import { Menubar } from 'primereact/menubar';
 import { InputText } from 'primereact/inputtext';
 import { FilterMatchMode } from 'primereact/api';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
-
+import SideBar from './SideBar';
 
 const MainWindow: React.FC = () => {
     const infoWidgetHeight = '90vh';
@@ -24,8 +24,8 @@ const MainWindow: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchTorrents(setTorrents)();
-        const id = setInterval(fetchTorrents(setTorrents), 5000);
+        fetchTorrents(setTorrents);
+        const id = setInterval(fetchTorrents.bind(null, setTorrents), 5000);
         return () => { clearInterval(id) };
     }, []);
 
@@ -42,7 +42,7 @@ const MainWindow: React.FC = () => {
                 <SplitterPanel
                     style={{ overflowX: 'hidden', overflowY: 'auto', height: infoWidgetHeight }}
                     size={20} minSize={10}>
-
+                    <SideBar torrents={torrents}/>
                 </SplitterPanel>
 
                 <SplitterPanel

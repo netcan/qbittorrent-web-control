@@ -11,3 +11,11 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+html {
+    font-size: 13px;
+}
+
+#sidebar.p-tree {
+    all: unset;
+}
