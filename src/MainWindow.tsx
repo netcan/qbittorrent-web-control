@@ -40,8 +40,8 @@ const MainWindow: React.FC = () => {
             <Menubar className='col-12' end={searchInput}/>
             <Splitter className='col-12'>
                 <SplitterPanel
-                    style={{ overflowX: 'hidden', overflowY: 'auto', height: infoWidgetHeight }}
-                    size={20} minSize={10}>
+                    style={{ overflow: 'auto', height: infoWidgetHeight }}
+                    size={20}>
                     <SideBar torrents={torrents}/>
                 </SplitterPanel>
 

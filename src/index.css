@@ -19,3 +19,7 @@ html {
 #sidebar.p-tree {
     all: unset;
 }
+
+#sidebar .p-treenode {
+    min-width: max-content;
+}
