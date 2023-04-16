@@ -9,18 +9,18 @@ interface SideBarProps {
     torrents: Torrent.Torrent[],
 };
 
-const parseLen = (torrents: Torrent.Torrent[], predicate: (_: Torrent.Torrent) => boolean) => {
-    const len = torrents.filter((torrent) => { return predicate(torrent); }).length;
-    return len === 0 ? '' : ` (${len})`;
+type Counter = {
+    [key: string]: number
 };
 
-const getItem = (torrents: Torrent.Torrent[], keyName: string, labelName: string, icon: string,
-                      predicate: (_: Torrent.Torrent) => boolean,
-                      children: TreeNode[] = []
-                     ): TreeNode => {
+const getItem = (keyName: string, labelName: string, icon: string,
+                 counter: Counter, children: TreeNode[] = []): TreeNode => {
+    const parseLen = (len: number) => {
+        return len ? ` (${len})` : '';
+    };
     return {
         key: keyName,
-        label: `${labelName}${parseLen(torrents, predicate)}`,
+        label: `${labelName}${parseLen(counter[keyName])}`,
         icon: `pi ${icon}`,
         children: children
     };
@@ -30,30 +30,61 @@ const SideBar: React.FC<SideBarProps> = ({ torrents }) => {
     const [nodes, setNodes] = useState<TreeNode[]>([]);
 
     useEffect(() => {
-        const item = getItem.bind(null, torrents);
-        const status = item('status', 'All', 'pi-home', (_) => { return true; }, [
-            item('download', 'Downloading', Torrent.downloadIcon, Torrent.isDownload),
-            item('paused',   'Paused',      Torrent.pausedIcon,   Torrent.isPaused),
-            item('upload',   'Seeding',     Torrent.uploadIcon,   Torrent.isUpload),
-            item('check',    'Checking',    Torrent.checkingIcon, Torrent.isChecking),
-            item('active',   'Active',      Torrent.activeIcon,   Torrent.isActivate),
-            item('error',    'Error',       Torrent.errorIcon,    Torrent.isError),
+        const inc = (c: Counter, key: string) => {
+            if (c[key] === undefined) c[key] = 0;
+            ++c[key];
+        }
+        const statusCount: Counter = { };
+        const trackerCount: Counter = { };
+        const folderCount: Counter = { };
+
+        const trackerSet = new Set<string>();
+        const folderSet = new Set<string>();
+        for (const torrent of torrents) {
+            Torrent.isDownload(torrent) && inc(statusCount, 'download');
+            Torrent.isPaused(torrent)   && inc(statusCount, 'pause');
+            Torrent.isUpload(torrent)   && inc(statusCount, 'upload');
+            Torrent.isChecking(torrent) && inc(statusCount, 'check');
+            Torrent.isActivate(torrent) && inc(statusCount, 'active');
+            Torrent.isError(torrent)    && inc(statusCount, 'error');
+
+            {
+                const tracker = getHostName(torrent.tracker);
+                trackerSet.add(tracker)
+                inc(trackerCount, tracker);
+            }
+
+            {
+                folderSet.add(torrent.save_path);
+                let folderPath = '';
+                for (const folder of torrent.save_path.split('/')) { // TODO: handle win path
+                    if (folder === '') {
+                        continue;
+                    }
+                    const next = path.join(folderPath, folder);
+                    inc(folderCount, next);
+                    folderPath = next;
+                }
+            }
+        }
+
+        const status = getItem('status', 'All', 'pi-home', {}, [
+            getItem('download', 'Downloading', Torrent.downloadIcon, statusCount),
+            getItem('pause',    'Paused',      Torrent.pausedIcon,   statusCount),
+            getItem('upload',   'Seeding',     Torrent.uploadIcon,   statusCount),
+            getItem('check',    'Checking',    Torrent.checkingIcon, statusCount),
+            getItem('active',   'Active',      Torrent.activeIcon,   statusCount),
+            getItem('error',    'Error',       Torrent.errorIcon,    statusCount),
         ]);
 
-        const trackersList = [...new Set(torrents.map((torrent) => {
-            return getHostName(torrent.tracker);
-        }))];
-        const trackers = item('trackers', 'Trackers', 'pi-globe', (_) => { return false },
+        const trackersList = [...trackerSet];
+        const trackers = getItem('trackers', 'Trackers', 'pi-globe', {},
                               trackersList.map((tracker) => {
-                                  return item(tracker, tracker, 'pi-server', (torrent) => {
-                                      return getHostName(torrent.tracker) === tracker;
-                                  });
+                                  return getItem(tracker, tracker, 'pi-server', trackerCount)
                               }));
 
-        const folders = item('folders', 'Folders', 'pi-folder', (_) => { return false; }, []);
-        const foldersList = [...new Set(torrents.map((torrent) => {
-            return torrent.save_path; // TODO: handle win path
-        }))];
+        const folders = getItem('folders', 'Folders', 'pi-folder', {}, []);
+        const foldersList = [...folderSet];
 
         for (const savedPath of foldersList) {
             let folderItem = folders;
@@ -61,12 +92,12 @@ const SideBar: React.FC<SideBarProps> = ({ torrents }) => {
                 if (folder === '') {
                     continue;
                 }
-                let next = folderItem.children?.find((item) => {
-                    return item.label?.includes(folder);
+                let next = folderItem.children?.find((getItem) => {
+                    return getItem.label?.includes(folder);
                 });
-                if (! next) {
-                    const key = folderItem == folders ? folder : path.join(folderItem.key as string, folder);
-                    next = item(key, folder, 'pi-folder', (torrent) => { return torrent.save_path.includes(key); }, []);
+                if (!next) {
+                    const key = folderItem === folders ? folder : path.join(folderItem.key as string, folder);
+                    next = getItem(key, folder, 'pi-folder', folderCount, []);
                     folderItem.children?.push(next);
                 }
                 folderItem = next;
