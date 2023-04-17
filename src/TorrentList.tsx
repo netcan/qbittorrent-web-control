@@ -88,7 +88,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
             ref={dt}
             selectionMode="checkbox"
             resizableColumns
-            /* columnResizeMode="expand" */
+            columnResizeMode="expand"
             reorderableColumns
             filters={filters}
             globalFilterFields={['name', 'save_path', 'tracker']}

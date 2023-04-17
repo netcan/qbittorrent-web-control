@@ -12,9 +12,7 @@ const MainWindow: React.FC = () => {
     const infoWidgetHeight = '90vh';
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
-    const [filters, setFilters] = useState<DataTableFilterMeta>({
-        global: createFilter(),
-    });
+    const [filters, setFilters] = useState<DataTableFilterMeta>({ });
     const searchWordOnChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFilters((prev) => {
             return {...prev, global: createFilter(e.target.value)};

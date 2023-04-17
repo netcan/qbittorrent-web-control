@@ -119,6 +119,7 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
 
     const createTrackerFilter = (tracker: string) => {
         FilterService.register('trackerFilter', (tracker, value) => {
+            if (value === '') { return true; }
             return getHostName(tracker) == value;
         });
         return {
