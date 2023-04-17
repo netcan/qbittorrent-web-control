@@ -5,13 +5,9 @@ import { Badge } from 'primereact/badge';
 import TreeNode from "primereact/treenode";
 import { FilterMatchMode, FilterService } from "primereact/api";
 import * as Torrent from './Torrent';
+import { StatusGroup, StatusTable } from './Torrent';
 import { createFilter, getHostName, isSameClass } from "./Utils";
 import path from "path-browserify";
-
-interface SideBarProps {
-    torrents: Torrent.Torrent[],
-    setFilters: Dispatch<SetStateAction<DataTableFilterMeta>>,
-};
 
 class ItemInfo {
     counter: number = 0;
@@ -22,37 +18,33 @@ class StatusInfo extends ItemInfo {};
 class TrackersInfo extends ItemInfo {};
 class FoldersInfo extends ItemInfo {};
 
-type ItemData<T extends ItemInfo> = {
-    [key: string]: T
-};
-
-const getItem = <T extends ItemInfo>(keyName: string, labelName: string, icon: string,
-                                     data: ItemData<T> = {}, children: TreeNode[] = []): TreeNode => {
-    return {
-        key: keyName,
-        label: `${labelName}`,
-        data: data[keyName],
-        icon: `pi ${icon}`,
-        children: children
-    };
-}
-
 const getItems = (torrents: Torrent.Torrent[]) => {
-    const statusData: ItemData<StatusInfo> = {
-        'download': new StatusInfo(),
-        'pause': new StatusInfo(),
-        'upload': new StatusInfo(),
-        'check': new StatusInfo(),
-        'active': new StatusInfo(),
-        'error': new StatusInfo(),
+    type ItemData<T extends ItemInfo, K extends string = string> = {
+        [key in K]: T
     };
+    const getItem = <T extends ItemInfo>(keyName: string, labelName: string, icon: string,
+                                         data: ItemData<T> = {}, children: TreeNode[] = []): TreeNode => {
+        return {
+            key: keyName,
+            label: `${labelName}`,
+            data: data[keyName],
+            icon: `pi ${icon}`,
+            children: children
+        };
+    }
+
+    const statusData = Object.values(StatusGroup).reduce(
+         (data, status) => ({ ...data, [status]: new StatusInfo() }),
+         {} as ItemData<StatusInfo, StatusGroup>
+    );
+
     const status = getItem('status', 'All', 'pi-home', {}, [
-        getItem('download', 'Downloading', Torrent.downloadIcon, statusData),
-        getItem('pause',    'Paused',      Torrent.pausedIcon,   statusData),
-        getItem('upload',   'Seeding',     Torrent.uploadIcon,   statusData),
-        getItem('check',    'Checking',    Torrent.checkingIcon, statusData),
-        getItem('active',   'Active',      Torrent.activeIcon,   statusData),
-        getItem('error',    'Error',       Torrent.errorIcon,    statusData),
+        getItem(StatusGroup.DOWNLOAD, 'Downloading', StatusTable[StatusGroup.DOWNLOAD].icon, statusData),
+        getItem(StatusGroup.PAUSE,    'Paused',      StatusTable[StatusGroup.PAUSE].icon,    statusData),
+        getItem(StatusGroup.UPLOAD,   'Seeding',     StatusTable[StatusGroup.UPLOAD].icon,   statusData),
+        getItem(StatusGroup.CHECK,    'Checking',    StatusTable[StatusGroup.CHECK].icon,    statusData),
+        getItem(StatusGroup.ACTIVE,   'Active',      StatusTable[StatusGroup.ACTIVE].icon,   statusData),
+        getItem(StatusGroup.ERROR,    'Error',       StatusTable[StatusGroup.ERROR].icon,    statusData),
     ]);
 
     const trackerData: ItemData<TrackersInfo> = { };
@@ -63,12 +55,9 @@ const getItems = (torrents: Torrent.Torrent[]) => {
     const folders = getItem('folders', 'Folders', 'pi-folder');
 
     for (const torrent of torrents) {
-        Torrent.isDownload(torrent) && ++statusData['download'].counter;
-        Torrent.isPaused(torrent)   && ++statusData['pause'].counter;
-        Torrent.isUpload(torrent)   && ++statusData['upload'].counter;
-        Torrent.isChecking(torrent) && ++statusData['check'].counter;
-        Torrent.isActivate(torrent) && ++statusData['active'].counter;
-        Torrent.isError(torrent)    && ++statusData['error'].counter;
+        Object.values(StatusGroup).forEach((sg) => {
+            StatusTable.is(torrent.state, sg) && ++statusData[sg].counter;
+        });
 
         {
             const tracker = getHostName(torrent.tracker);
@@ -111,6 +100,10 @@ const getItems = (torrents: Torrent.Torrent[]) => {
     ];
 };
 
+interface SideBarProps {
+    torrents: Torrent.Torrent[],
+    setFilters: Dispatch<SetStateAction<DataTableFilterMeta>>,
+};
 
 const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
     const [nodes, setNodes] = useState<TreeNode[]>([]);
@@ -120,7 +113,7 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
     const createTrackerFilter = (tracker: string) => {
         FilterService.register('trackerFilter', (tracker, value) => {
             if (value === '') { return true; }
-            return getHostName(tracker) == value;
+            return getHostName(tracker) === value;
         });
         return {
             value: tracker,

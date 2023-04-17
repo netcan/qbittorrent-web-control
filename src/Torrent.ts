@@ -81,34 +81,46 @@ export async function fetchTorrents<T extends (_: Torrent[]) => unknown>(setter:
     }
 }
 
-export function isDownload(torrent: Torrent) {
-    return ['downloading', 'metaDL', 'stalledDL', 'queuedDL', 'forcedDL'].includes(torrent.state);
-}
+export enum StatusGroup {
+    DOWNLOAD = "download",
+    PAUSE = "pause",
+    UPLOAD = "upload",
+    CHECK = "check",
+    ACTIVE = "active",
+    ERROR = "error",
+};
 
-export function isUpload(torrent: Torrent) {
-    return ['uploading', 'stalledUP', 'queuedUP', 'forcedUP'].includes(torrent.state);
-}
+type StatusTableType =
+    { [key in StatusGroup]: { readonly states: TorrentState[], readonly icon: string } } &
+    { readonly is: (ts: TorrentState, sg: StatusGroup) => boolean };
 
-export function isActivate(torrent: Torrent) {
-    return ['downloading', 'metaDL', 'uploading'].includes(torrent.state);
+export const StatusTable: StatusTableType = {
+    [StatusGroup.DOWNLOAD]: {
+       states: ['downloading', 'metaDL', 'stalledDL', 'queuedDL', 'forcedDL'],
+       icon: 'pi-arrow-circle-down',
+    },
+    [StatusGroup.PAUSE]:    {
+       states: ['pausedDL', 'pausedUP'],
+       icon: 'pi-pause'
+    },
+    [StatusGroup.UPLOAD]:   {
+       states: ['uploading', 'stalledUP', 'queuedUP', 'forcedUP'],
+       icon: 'pi-arrow-circle-up',
+    },
+    [StatusGroup.CHECK]:    {
+       states: ['checkingUP', 'checkingDL', 'checkingResumeData'],
+       icon: 'pi-sync'
+    },
+    [StatusGroup.ACTIVE]:   {
+       states: ['downloading', 'metaDL', 'uploading'],
+       icon: 'pi-arrow-right-arrow-left'
+    },
+    [StatusGroup.ERROR]:    {
+       states: ['error', 'missingFiles'],
+       icon: 'pi-exclamation-triangle'
+    },
+    is: function (ts: TorrentState, sg: StatusGroup): boolean {
+        return this[sg].states.includes(ts);
+    }
 }
-
-export function isPaused(torrent: Torrent) {
-    return ['pausedDL', 'pausedUP'].includes(torrent.state);
-}
-
-export function isChecking(torrent: Torrent) {
-    return ['checkingUP', 'checkingDL', 'checkingResumeData'].includes(torrent.state);
-}
-
-export function isError(torrent: Torrent) {
-    return ['error', 'missingFiles'].includes(torrent.state);
-}
-
-export const downloadIcon = 'pi-arrow-circle-down';
-export const uploadIcon = 'pi-arrow-circle-up';
-export const activeIcon = 'pi-arrow-right-arrow-left';
-export const pausedIcon = 'pi-pause';
-export const checkingIcon = 'pi-sync';
-export const errorIcon = 'pi-exclamation-triangle';
 

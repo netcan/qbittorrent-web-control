@@ -4,19 +4,20 @@ import { DataTable, DataTableSelectionChangeEvent,
 import { Column } from 'primereact/column';
 import { ProgressBar } from 'primereact/progressbar';
 import * as Torrent from './Torrent';
+import { StatusGroup, StatusTable } from './Torrent';
 import { parseSpeed, parseEpoch, parseSize, getHostName } from './Utils';
 
-export function stateIcon(torrent: Torrent.Torrent) {
-    if (Torrent.isDownload(torrent)) {
-        return Torrent.downloadIcon;
-    } else if (Torrent.isUpload(torrent)) {
-        return Torrent.uploadIcon;
-    } else if (Torrent.isPaused(torrent)) {
-        return Torrent.pausedIcon;
-    } else if (Torrent.isChecking(torrent)) {
-        return Torrent.checkingIcon;
-    } else if (Torrent.isError(torrent)) {
-        return Torrent.errorIcon;
+export function stateIcon(state: Torrent.TorrentState) {
+    if (StatusTable.is(state, StatusGroup.DOWNLOAD)) {
+        return StatusTable[StatusGroup.DOWNLOAD].icon;
+    } else if (StatusTable.is(state, StatusGroup.UPLOAD)) {
+        return StatusTable[StatusGroup.UPLOAD].icon;
+    } else if (StatusTable.is(state, StatusGroup.PAUSE)) {
+        return StatusTable[StatusGroup.PAUSE].icon;
+    } else if (StatusTable.is(state, StatusGroup.CHECK)) {
+        return StatusTable[StatusGroup.CHECK].icon;
+    } else if (StatusTable.is(state, StatusGroup.ERROR)) {
+        return StatusTable[StatusGroup.ERROR].icon;
     }
 }
 
@@ -46,7 +47,7 @@ const parseField = (field: keyof Torrent.Torrent) => {
             case 'tracker':
                 return getHostName(torrent[field]);
             case 'name':
-                return (<><span className={`pi ${stateIcon(torrent)}`}/> {torrent[field]}</>);
+                return (<><span className={`pi ${stateIcon(torrent.state)}`}/> {torrent[field]}</>);
             default:
                 return torrent[field];
         }
