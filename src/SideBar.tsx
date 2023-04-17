@@ -26,11 +26,11 @@ class FoldersInfo extends ItemInfo {
 
 const getItems = (torrents: Torrent.Torrent[]) => {
     const getItem = <T extends ItemInfo>(keyName: string, labelName: string, icon: string,
-                                         data: Record<string, T> = {}, children: TreeNode[] = []): TreeNode => {
+                                         data: T, children: TreeNode[] = []): TreeNode => {
         return {
             key: keyName,
             label: `${labelName}`,
-            data: data[keyName],
+            data: data,
             icon: `pi ${icon}`,
             children: children
         };
@@ -41,21 +41,23 @@ const getItems = (torrents: Torrent.Torrent[]) => {
          {} as Record<StatusGroup, StatusInfo>
     );
 
-    const status = getItem('status', 'All', 'pi-home', {}, [
-        getItem(StatusGroup.DOWNLOAD, 'Downloading', StatusTable[StatusGroup.DOWNLOAD].icon, statusData),
-        getItem(StatusGroup.PAUSE,    'Paused',      StatusTable[StatusGroup.PAUSE].icon,    statusData),
-        getItem(StatusGroup.UPLOAD,   'Seeding',     StatusTable[StatusGroup.UPLOAD].icon,   statusData),
-        getItem(StatusGroup.CHECK,    'Checking',    StatusTable[StatusGroup.CHECK].icon,    statusData),
-        getItem(StatusGroup.ACTIVE,   'Active',      StatusTable[StatusGroup.ACTIVE].icon,   statusData),
-        getItem(StatusGroup.ERROR,    'Error',       StatusTable[StatusGroup.ERROR].icon,    statusData),
-    ]);
+    const status = getItem('status', 'All', 'pi-home', new ItemInfo(), ([
+        [StatusGroup.DOWNLOAD, 'Downloading'],
+        [StatusGroup.PAUSE,    'Paused'],
+        [StatusGroup.UPLOAD,   'Seeding'],
+        [StatusGroup.CHECK,    'Checking'],
+        [StatusGroup.ACTIVE,   'Active'],
+        [StatusGroup.ERROR,    'Error'],
+    ] as [StatusGroup, string][]).map(([sg, label]) =>
+        getItem(sg, label, StatusTable[sg].icon, statusData[sg])
+    ));
 
     const trackerData: Record<string, TrackersInfo> = { };
-    const trackers = getItem('trackers', 'Trackers', 'pi-globe');
+    const trackers = getItem('trackers', 'Trackers', 'pi-globe', new ItemInfo());
 
     const folderData: Record<string, FoldersInfo> = { };
     let folderNodes: { [key: string]: TreeNode; } = {};
-    const folders = getItem('folders', 'Folders', 'pi-folder');
+    const folders = getItem('folders', 'Folders', 'pi-folder', new FoldersInfo());
 
     for (const torrent of torrents) {
         Object.values(StatusGroup).forEach((sg) => {
@@ -67,7 +69,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
             if (! (tracker in trackerData)) {
                 trackerData[tracker] = new TrackersInfo();
                 trackers.children?.push(
-                    getItem(tracker, tracker, 'pi-server', trackerData)
+                    getItem(tracker, tracker, 'pi-server', trackerData[tracker])
                 );
             }
             ++trackerData[tracker].counter;
@@ -82,7 +84,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
                 const next = path.join(folderPath, folder);
                 if (! (next in folderData)) {
                     folderData[next] = new FoldersInfo();
-                    const folderItem = getItem(next, folder, 'pi-folder', folderData, []);
+                    const folderItem = getItem(next, folder, 'pi-folder', folderData[next], []);
                     if (folderPath === '') {
                         folders.children?.push(folderItem)
                     } else {
@@ -142,8 +144,9 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
         if (lastSelectedItem === node) {
             return;
         }
-        // clear last selected item filter
+
         if (! isSameClass(lastSelectedItem?.data, node.data)) {
+            // clear last selected item filter
             setFilter(lastSelectedItem?.data);
         }
 
