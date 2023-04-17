@@ -14,16 +14,19 @@ class ItemInfo {
     size: number = 0;
 };
 
-class StatusInfo extends ItemInfo {};
-class TrackersInfo extends ItemInfo {};
-class FoldersInfo extends ItemInfo {};
+class StatusInfo extends ItemInfo {
+    kind = 'StatusInfo' as const
+};
+class TrackersInfo extends ItemInfo {
+    kind = 'TrackersInfo' as const
+};
+class FoldersInfo extends ItemInfo {
+    kind = 'FoldersInfo' as const
+};
 
 const getItems = (torrents: Torrent.Torrent[]) => {
-    type ItemData<T extends ItemInfo, K extends string = string> = {
-        [key in K]: T
-    };
     const getItem = <T extends ItemInfo>(keyName: string, labelName: string, icon: string,
-                                         data: ItemData<T> = {}, children: TreeNode[] = []): TreeNode => {
+                                         data: Record<string, T> = {}, children: TreeNode[] = []): TreeNode => {
         return {
             key: keyName,
             label: `${labelName}`,
@@ -34,8 +37,8 @@ const getItems = (torrents: Torrent.Torrent[]) => {
     }
 
     const statusData = Object.values(StatusGroup).reduce(
-         (data, status) => ({ ...data, [status]: new StatusInfo() }),
-         {} as ItemData<StatusInfo, StatusGroup>
+         (data, status) => ({ ...data, [status]: new TrackersInfo() }),
+         {} as Record<StatusGroup, StatusInfo>
     );
 
     const status = getItem('status', 'All', 'pi-home', {}, [
@@ -47,10 +50,10 @@ const getItems = (torrents: Torrent.Torrent[]) => {
         getItem(StatusGroup.ERROR,    'Error',       StatusTable[StatusGroup.ERROR].icon,    statusData),
     ]);
 
-    const trackerData: ItemData<TrackersInfo> = { };
+    const trackerData: Record<string, TrackersInfo> = { };
     const trackers = getItem('trackers', 'Trackers', 'pi-globe');
 
-    const folderData: ItemData<FoldersInfo> = { };
+    const folderData: Record<string, FoldersInfo> = { };
     let folderNodes: { [key: string]: TreeNode; } = {};
     const folders = getItem('folders', 'Folders', 'pi-folder');
 
