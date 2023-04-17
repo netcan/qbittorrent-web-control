@@ -37,7 +37,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
     }
 
     const statusData = Object.values(StatusGroup).reduce(
-         (data, status) => ({ ...data, [status]: new TrackersInfo() }),
+         (data, status) => ({ ...data, [status]: new StatusInfo() }),
          {} as Record<StatusGroup, StatusInfo>
     );
 
@@ -77,10 +77,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
 
         {
             let folderPath = '';
-            for (const folder of torrent.save_path.split('/')) { // TODO: handle win path
-                if (folder === '') {
-                    continue;
-                }
+            for (const folder of torrent.save_path.split('/').filter(folder => folder !== '')) { // TODO: handle win path
                 const next = path.join(folderPath, folder);
                 if (! (next in folderData)) {
                     folderData[next] = new FoldersInfo();
@@ -126,14 +123,25 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
         };
     };
 
-    const setFilter = <T extends ItemInfo>(info: T, value: string = '') => {
-        if (! info) { return; }
+    const createStatusFilter = (sg: StatusGroup) => {
+        FilterService.register('statusFilter', (state: Torrent.TorrentState, sg) => {
+            if (sg === '') { return true; }
+            return StatusTable.is(state, sg);
+        });
+        return {
+            value: sg,
+            matchMode: 'statusFilter' as FilterMatchMode
+        };
+    }
+
+    const setFilter = <T extends ItemInfo>(data: T, value: string = '') => {
+        if (! data) { return; }
         setFilters((prev) => {
-            if (info instanceof StatusInfo) {
-                return { ...prev, state: createFilter(value) };
-            } else if (info instanceof TrackersInfo) {
+            if (data instanceof StatusInfo) {
+                return { ...prev, state: createStatusFilter(value as StatusGroup) };
+            } else if (data instanceof TrackersInfo) {
                 return { ...prev, tracker: createTrackerFilter(value) };
-            } else if (info instanceof FoldersInfo) {
+            } else if (data instanceof FoldersInfo) {
                 return { ...prev, save_path: createFilter(value) };
             }
             return prev;
