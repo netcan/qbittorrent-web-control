@@ -9,23 +9,23 @@ import { StatusGroup, StatusTable } from './Torrent';
 import { createFilter, getHostName, isSameClass } from "./Utils";
 import path from "path-browserify";
 
-class ItemInfo {
+class ItemData {
     counter: number = 0;
     size: number = 0;
 };
 
-class StatusInfo extends ItemInfo {
-    kind = 'StatusInfo' as const
+class StatusData extends ItemData {
+    kind = 'StatusData' as const
 };
-class TrackersInfo extends ItemInfo {
-    kind = 'TrackersInfo' as const
+class TrackersData extends ItemData {
+    kind = 'TrackersData' as const
 };
-class FoldersInfo extends ItemInfo {
-    kind = 'FoldersInfo' as const
+class FoldersData extends ItemData {
+    kind = 'FoldersData' as const
 };
 
 const getItems = (torrents: Torrent.Torrent[]) => {
-    const getItem = <T extends ItemInfo>(keyName: string, labelName: string, icon: string,
+    const getItem = <T extends ItemData>(keyName: string, labelName: string, icon: string,
                                          data: T, children: TreeNode[] = []): TreeNode => {
         return {
             key: keyName,
@@ -37,11 +37,11 @@ const getItems = (torrents: Torrent.Torrent[]) => {
     }
 
     const statusData = Object.values(StatusGroup).reduce(
-         (data, status) => ({ ...data, [status]: new StatusInfo() }),
-         {} as Record<StatusGroup, StatusInfo>
+         (data, status) => ({ ...data, [status]: new StatusData() }),
+         {} as Record<StatusGroup, StatusData>
     );
 
-    const status = getItem('status', 'All', 'pi-home', new ItemInfo(), ([
+    const statusItem = getItem('status', 'All', 'pi-home', new ItemData(), ([
         [StatusGroup.DOWNLOAD, 'Downloading'],
         [StatusGroup.PAUSE,    'Paused'],
         [StatusGroup.UPLOAD,   'Seeding'],
@@ -52,12 +52,12 @@ const getItems = (torrents: Torrent.Torrent[]) => {
         getItem(sg, label, StatusTable[sg].icon, statusData[sg])
     ));
 
-    const trackerData: Record<string, TrackersInfo> = { };
-    const trackers = getItem('trackers', 'Trackers', 'pi-globe', new ItemInfo());
+    const trackerData: Record<string, TrackersData> = { };
+    const trackersItem = getItem('trackers', 'Trackers', 'pi-globe', new ItemData());
 
-    const folderData: Record<string, FoldersInfo> = { };
-    let folderNodes: { [key: string]: TreeNode; } = {};
-    const folders = getItem('folders', 'Folders', 'pi-folder', new FoldersInfo());
+    const folderData: Record<string, FoldersData> = { };
+    let folderNodes: { [key: string]: TreeNode; } = { };
+    const foldersItem = getItem('folders', 'Folders', 'pi-folder', new FoldersData());
 
     for (const torrent of torrents) {
         Object.values(StatusGroup).forEach((sg) => {
@@ -67,8 +67,8 @@ const getItems = (torrents: Torrent.Torrent[]) => {
         {
             const tracker = getHostName(torrent.tracker);
             if (! (tracker in trackerData)) {
-                trackerData[tracker] = new TrackersInfo();
-                trackers.children?.push(
+                trackerData[tracker] = new TrackersData();
+                trackersItem.children?.push(
                     getItem(tracker, tracker, 'pi-server', trackerData[tracker])
                 );
             }
@@ -80,10 +80,10 @@ const getItems = (torrents: Torrent.Torrent[]) => {
             for (const folder of torrent.save_path.split('/').filter(folder => folder !== '')) { // TODO: handle win path
                 const next = path.join(folderPath, folder);
                 if (! (next in folderData)) {
-                    folderData[next] = new FoldersInfo();
+                    folderData[next] = new FoldersData();
                     const folderItem = getItem(next, folder, 'pi-folder', folderData[next], []);
                     if (folderPath === '') {
-                        folders.children?.push(folderItem)
+                        foldersItem.children?.push(folderItem)
                     } else {
                         folderNodes[folderPath].children?.push(folderItem);
                     }
@@ -96,9 +96,9 @@ const getItems = (torrents: Torrent.Torrent[]) => {
     }
 
     return [
-        status,
-        trackers,
-        folders
+        statusItem,
+        trackersItem,
+        foldersItem
     ];
 };
 
@@ -134,14 +134,14 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
         };
     }
 
-    const setFilter = <T extends ItemInfo>(data: T, value: string = '') => {
+    const setFilter = <T extends ItemData>(data: T, value: string = '') => {
         if (! data) { return; }
         setFilters((prev) => {
-            if (data instanceof StatusInfo) {
+            if (data instanceof StatusData) {
                 return { ...prev, state: createStatusFilter(value as StatusGroup) };
-            } else if (data instanceof TrackersInfo) {
+            } else if (data instanceof TrackersData) {
                 return { ...prev, tracker: createTrackerFilter(value) };
-            } else if (data instanceof FoldersInfo) {
+            } else if (data instanceof FoldersData) {
                 return { ...prev, save_path: createFilter(value) };
             }
             return prev;
