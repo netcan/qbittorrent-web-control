@@ -33,3 +33,11 @@ html {
     float:right;
     padding-right:2px;
 }
+
+#torrent-list .p-datatable-wrapper {
+    width: max-content;
+}
+
+#torrent-list .p-paginator {
+    width: max-content;
+}

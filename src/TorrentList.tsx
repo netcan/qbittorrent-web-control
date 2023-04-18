@@ -83,6 +83,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
 
     return (
         <DataTable
+            id='torrent-list'
             value={torrents} size='small'
             stripedRows paginator
             removableSort
