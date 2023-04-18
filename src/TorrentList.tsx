@@ -65,7 +65,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
     const columns: { field: keyof Torrent.Torrent, label: string }[] = [
         { field: 'tracker', label: 'Tracker' },
         { field: 'name', label: 'Name' },
-        { field: 'total_size', label: 'Size' },
+        { field: 'total_size', label: 'Total Size' },
         { field: 'progress', label: 'Progress' },
         { field: 'ratio', label: 'Ratio' },
         { field: 'num_seeds', label: 'Seeder' },
@@ -73,6 +73,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
         { field: 'dlspeed', label: 'Down Speed' },
         { field: 'upspeed', label: 'Up Speed' },
         { field: 'uploaded', label: 'Uploaded' },
+        { field: 'size', label: 'Completed Size' },
         { field: 'added_on', label: 'Added On' },
         { field: 'save_path', label: 'Download Path' },
         { field: 'last_activity', label: 'Last Activity' },

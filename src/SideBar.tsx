@@ -6,7 +6,7 @@ import TreeNode from "primereact/treenode";
 import { FilterMatchMode, FilterService } from "primereact/api";
 import * as Torrent from './Torrent';
 import { StatusGroup, StatusTable } from './Torrent';
-import { createFilter, getHostName, isSameClass } from "./Utils";
+import { createFilter, getHostName, isSameClass, parseSize } from "./Utils";
 import path from "path-browserify";
 
 class ItemData {
@@ -73,6 +73,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
                 );
             }
             ++trackerData[tracker].counter;
+            trackerData[tracker].size += torrent.size;
         }
 
         {
@@ -90,6 +91,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
                     folderNodes[next] = folderItem;
                 }
                 ++folderData[next].counter;
+                folderData[next].size += torrent.size;
                 folderPath = next;
             }
         }
@@ -173,6 +175,7 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
     const parseContent = (node: TreeNode, options: TreeNodeTemplateOptions) => {
         return <span className={options.className}>
             {node.label} {parseLen(node.data?.counter)}
+            {node.data?.size ? <span className='item-torrent-size text-500'>[{parseSize(node.data?.size)}]</span> : ''}
         </span>;
     };
 

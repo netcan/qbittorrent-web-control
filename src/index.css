@@ -23,3 +23,13 @@ html {
 #sidebar .p-treenode {
     min-width: max-content;
 }
+
+#sidebar .p-treenode-label {
+    width: 100%;
+}
+
+#sidebar .item-torrent-size {
+    display: block;
+    float:right;
+    padding-right:2px;
+}
