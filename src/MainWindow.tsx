@@ -10,6 +10,7 @@ import {createFilter} from './Utils';
 
 const MainWindow: React.FC = () => {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
+    const [detailTorrent, setDetailTorrent] = useState<Torrent | null>(null);
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
     const [filters, setFilters] = useState<DataTableFilterMeta>({ });
     const searchWordOnChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -52,7 +53,9 @@ const MainWindow: React.FC = () => {
                                 torrents={torrents}
                                 filters={filters}
                                 selectedTorrents={selectedTorrents}
-                                setSelectedTorrents={setSelectedTorrents}/>
+                                setSelectedTorrents={setSelectedTorrents}
+                                setDetailTorrent={setDetailTorrent}
+                            />
                         </SplitterPanel>
                         <SplitterPanel size={20}>
                             torrent info panel

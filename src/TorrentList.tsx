@@ -59,9 +59,12 @@ interface TorrentListProps {
     selectedTorrents: DataTableSelection<Torrent.Torrent[]>,
     filters: DataTableFilterMeta,
     setSelectedTorrents: Dispatch<SetStateAction<DataTableSelection<Torrent.Torrent[]>>>
+    setDetailTorrent: Dispatch<SetStateAction<Torrent.Torrent | null>>
 };
 
-const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTorrents, setSelectedTorrents }) => {
+const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters,
+                                                 selectedTorrents, setSelectedTorrents,
+                                                 setDetailTorrent }) => {
     const columns: { field: keyof Torrent.Torrent, label: string }[] = [
         { field: 'tracker', label: 'Tracker' },
         { field: 'name', label: 'Name' },
@@ -97,6 +100,8 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters, selectedTo
             globalFilterFields={['name', 'save_path', 'tracker']}
             scrollable scrollHeight='flex'
             selection={selectedTorrents}
+            selectionPageOnly={true}
+            onRowClick={(e) => { setDetailTorrent(e.data as Torrent.Torrent); }}
             onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent.Torrent[]>) => setSelectedTorrents(e.value)}
             dragSelection
             stateStorage='local'
