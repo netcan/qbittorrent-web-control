@@ -16,28 +16,36 @@ html {
     font-size: 13px;
 }
 
-#sidebar.p-tree {
+.torrent-sidebar.p-tree {
     all: unset;
 }
 
-#sidebar .p-treenode {
+.torrent-sidebar .p-treenode {
     min-width: max-content;
 }
 
-#sidebar .p-treenode-label {
+.torrent-sidebar .p-treenode-label {
     width: 100%;
 }
 
-#sidebar .item-torrent-size {
+.torrent-sidebar .item-torrent-size {
     display: block;
     float:right;
     padding-right:2px;
 }
 
-#torrent-list .p-datatable-wrapper {
+.torrent-list .p-datatable-wrapper {
     width: max-content;
 }
 
-#torrent-list .p-paginator {
+.torrent-list .p-paginator {
+    position: sticky;
+    left: 0;
     width: max-content;
 }
+
+.torrent-list-panel {
+    height: 0%;
+    overflow: auto;
+}
+

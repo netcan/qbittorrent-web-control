@@ -181,7 +181,7 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
 
     return (
         <Tree value={nodes}
-            id="sidebar"
+            className="torrent-sidebar"
             selectionMode="single"
             selectionKeys={selectedItemKey}
             onSelect={(e) => onSelect(e.node)}

@@ -32,9 +32,9 @@ const MainWindow: React.FC = () => {
     );
 
     return (
-        <div className="grid">
-            <Menubar className='col-12' end={searchInput}/>
-            <Splitter className='col-12'>
+        <div>
+            <Menubar end={searchInput}/>
+            <Splitter>
                 <SplitterPanel
                     style={{ overflow: 'auto', height: infoWidgetHeight }}
                     size={20}>
@@ -47,11 +47,18 @@ const MainWindow: React.FC = () => {
                 <SplitterPanel
                     style={{ overflow: 'auto', height: infoWidgetHeight }}
                     size={80}>
-                    <TorrentList
-                        torrents={torrents}
-                        filters={filters}
-                        selectedTorrents={selectedTorrents}
-                        setSelectedTorrents={setSelectedTorrents}/>
+                    <Splitter layout='vertical' style={{maxWidth: '100%'}}>
+                        <SplitterPanel className='torrent-list-panel' size={80}>
+                            <TorrentList
+                                torrents={torrents}
+                                filters={filters}
+                                selectedTorrents={selectedTorrents}
+                                setSelectedTorrents={setSelectedTorrents}/>
+                        </SplitterPanel>
+                        <SplitterPanel size={20}>
+                            torrent info panel
+                        </SplitterPanel>
+                    </Splitter>
                 </SplitterPanel>
             </Splitter>
         </div>
