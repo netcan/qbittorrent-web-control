@@ -16,8 +16,9 @@ html {
     font-size: 13px;
 }
 
-.torrent-sidebar.p-tree {
-    all: unset;
+#root {
+    overflow: hidden;
+    height: 100vh;
 }
 
 .torrent-sidebar .p-treenode {
@@ -34,14 +35,13 @@ html {
     padding-right:2px;
 }
 
-.torrent-list .p-datatable-wrapper {
-    width: max-content;
+
+.torrent-list {
+    max-width: 100%;
 }
 
 .torrent-list .p-paginator {
-    position: sticky;
-    left: 0;
-    width: max-content;
+    justify-content: left;
 }
 
 .torrent-list-panel {

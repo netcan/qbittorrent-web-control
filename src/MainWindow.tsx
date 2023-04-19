@@ -9,7 +9,6 @@ import SideBar from './SideBar';
 import {createFilter} from './Utils';
 
 const MainWindow: React.FC = () => {
-    const infoWidgetHeight = '90vh';
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
     const [filters, setFilters] = useState<DataTableFilterMeta>({ });
@@ -32,11 +31,11 @@ const MainWindow: React.FC = () => {
     );
 
     return (
-        <div>
+        <div style={{height: '100vh'}}>
             <Menubar end={searchInput}/>
-            <Splitter>
+            <Splitter style={{height: '100%'}}>
                 <SplitterPanel
-                    style={{ overflow: 'auto', height: infoWidgetHeight }}
+                    style={{ overflow: 'auto' }}
                     size={20}>
                     <SideBar
                         torrents={torrents}
@@ -45,7 +44,7 @@ const MainWindow: React.FC = () => {
                 </SplitterPanel>
 
                 <SplitterPanel
-                    style={{ overflow: 'auto', height: infoWidgetHeight }}
+                    style={{ overflow: 'auto' }}
                     size={80}>
                     <Splitter layout='vertical' style={{maxWidth: '100%'}}>
                         <SplitterPanel className='torrent-list-panel' size={80}>
