@@ -1,5 +1,5 @@
 import TorrentList from './TorrentList';
-import { Torrent, fetchTorrents } from './Torrent';
+import { Torrent, torrentsInfo, torrentsProperties } from './Torrent';
 import React, { useState, useEffect, ChangeEvent } from 'react';
 import { DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Menubar } from 'primereact/menubar';
@@ -20,10 +20,20 @@ const MainWindow: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchTorrents(setTorrents);
-        const id = setInterval(fetchTorrents.bind(null, setTorrents), 5000);
+        torrentsInfo(setTorrents);
+        const id = setInterval(torrentsInfo.bind(null, setTorrents), 5000);
         return () => { clearInterval(id) };
     }, []);
+
+    useEffect(() => {
+        if (! detailTorrent) {
+            return;
+        }
+        (async () => {
+            const properties = await torrentsProperties(detailTorrent.hash);
+            console.log(properties);
+        }) ()
+    }, [detailTorrent]);
 
     const searchInput = (
         <InputText placeholder="Search"

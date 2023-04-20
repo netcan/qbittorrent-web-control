@@ -67,12 +67,54 @@ export interface Torrent {
     upspeed: number,                     // Torrent upload speed (bytes/s)
 };
 
-export async function fetchTorrents<T extends (_: Torrent[]) => unknown>(setter: T) {
+export interface TorrentGenericProp {
+    save_path: string,                  // Torrent save path
+    creation_date: number,              // Torrent creation date (Unix timestamp)
+    piece_size: number,                 // Torrent piece size (bytes)
+    comment: string,                    // Torrent comment
+    total_wasted: number,               // Total data wasted for torrent (bytes)
+    total_uploaded: number,             // Total data uploaded for torrent (bytes)
+    total_uploaded_session: number,     // Total data uploaded this session (bytes)
+    total_downloaded: number,           // Total data downloaded for torrent (bytes)
+    total_downloaded_session: number,   // Total data downloaded this session (bytes)
+    up_limit: number,                   // Torrent upload limit (bytes/s)
+    dl_limit: number,                   // Torrent download limit (bytes/s)
+    time_elapsed: number,               // Torrent elapsed time (seconds)
+    seeding_time: number,               // Torrent elapsed time while complete (seconds)
+    nb_connections: number,             // Torrent connection count
+    nb_connections_limit: number,       // Torrent connection count limit
+    share_ratio: number,                // Torrent share ratio
+    addition_date: number,              // When this torrent was added (unix timestamp)
+    completion_date: number,            // Torrent completion date (unix timestamp)
+    created_by: string,                 // Torrent creator
+    dl_speed_avg: number,               // Torrent average download speed (bytes/second)
+    dl_speed: number,                   // Torrent download speed (bytes/second)
+    eta: number,                        // Torrent ETA (seconds)
+    last_seen: number,                  // Last seen complete date (unix timestamp)
+    peers: number,                      // Number of peers connected to
+    peers_total: number,                // Number of peers in the swarm
+    pieces_have: number,                // Number of pieces owned
+    pieces_num: number,                 // Number of pieces of the torrent
+    reannounce: number,                 // Number of seconds until the next announce
+    seeds: number,                      // Number of seeds connected to
+    seeds_total: number,                // Number of seeds in the swarm
+    total_size: number,                 // Torrent total size (bytes)
+    up_speed_avg: number,               // Torrent average upload speed (bytes/second)
+    up_speed: number,                   // Torrent upload speed (bytes/second)
+};
+
+type ApiName = 'torrents';
+type MethodName<T extends ApiName> =
+    T extends 'torrents'
+        ? 'info' | 'properties'
+        : unknown;
+
+async function qbApiFetch<T>(apiName: ApiName, methodName: MethodName<ApiName>, args?: Record<string, any>) {
     try {
-        const response = await fetch('/api/v2/torrents/info');
+        const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(args)}`);
         if (response.ok) {
-            const torrentsData: Torrent[] = await response.json();
-            setter(torrentsData);
+            const res: T = await response.json();
+            return res;
         } else {
             console.error('Failed to fetch torrents data');
         }
@@ -80,6 +122,16 @@ export async function fetchTorrents<T extends (_: Torrent[]) => unknown>(setter:
         console.error('Error while fetching torrents data', error);
     }
 }
+
+export async function torrentsInfo<S extends (_: Torrent[]) => unknown>(setter: S) {
+    const torrents = await qbApiFetch<Torrent[]>('torrents', 'info');
+    setter(torrents ? torrents : []);
+}
+
+export async function torrentsProperties(hash: string) {
+    const properties = await qbApiFetch<TorrentGenericProp>('torrents', 'properties', {hash: hash});
+    return properties;
+};
 
 export enum StatusGroup {
     DOWNLOAD = "download",
