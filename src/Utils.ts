@@ -19,6 +19,28 @@ export function parseEpoch(epoch: number) {
     return new Date(epoch * 1000).toLocaleString('zh');
 }
 
+export function parseDuration(seconds: number, units: number = 1): string {
+    const TIME_UNITS = [
+        [86400, "d"], [3600, "h"],
+        [60, "m"], [1, "s"],
+    ] as const;
+
+    let unit = 0;
+    let res = "";
+    for (const [unitSeconds, unitLabel] of TIME_UNITS) {
+        const unitValue = Math.floor(seconds / unitSeconds);
+        seconds %= unitSeconds;
+        if (unitValue > 0) {
+            res += `${unitValue}${unitLabel} `;
+            ++unit;
+        }
+        if (unit >= units) {
+            return res.trim();
+        }
+    }
+    return '0s';
+}
+
 export enum HOSTNAME {
     UNKNOWN = 'unknown'
 };

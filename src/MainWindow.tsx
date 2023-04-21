@@ -7,6 +7,7 @@ import { InputText } from 'primereact/inputtext';
 import { Splitter, SplitterPanel } from 'primereact/splitter';
 import SideBar from './SideBar';
 import {createFilter} from './Utils';
+import TorrentPanel from './TorrentPanel';
 
 const MainWindow: React.FC = () => {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
@@ -21,7 +22,7 @@ const MainWindow: React.FC = () => {
 
     useEffect(() => {
         torrentsInfo(setTorrents);
-        const id = setInterval(torrentsInfo.bind(null, setTorrents), 5000);
+        const id = setInterval(torrentsInfo.bind(null, setTorrents), 3000);
         return () => { clearInterval(id) };
     }, []);
 
@@ -58,7 +59,7 @@ const MainWindow: React.FC = () => {
                     style={{ overflow: 'auto' }}
                     size={80}>
                     <Splitter layout='vertical' style={{maxWidth: '100%'}}>
-                        <SplitterPanel className='torrent-list-panel' size={80}>
+                        <SplitterPanel className='torrent-list-panel' size={70}>
                             <TorrentList
                                 torrents={torrents}
                                 filters={filters}
@@ -67,8 +68,8 @@ const MainWindow: React.FC = () => {
                                 setDetailTorrent={setDetailTorrent}
                             />
                         </SplitterPanel>
-                        <SplitterPanel size={20}>
-                            torrent info panel
+                        <SplitterPanel size={30}>
+                            <TorrentPanel detailTorrent={detailTorrent}/>
                         </SplitterPanel>
                     </Splitter>
                 </SplitterPanel>
