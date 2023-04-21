@@ -68,7 +68,7 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
 
 const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
     return (
-        <TabView>
+        <TabView className='h-full flex flex-column torrent-panel'>
             <TabPanel header="General">
                 <DetailTorrent {...props}/>
             </TabPanel>

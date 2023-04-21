@@ -58,7 +58,7 @@ const MainWindow: React.FC = () => {
                                 setDetailTorrent={setDetailTorrent}
                             />
                         </SplitterPanel>
-                        <SplitterPanel size={30}>
+                        <SplitterPanel size={30} style={{ overflow: 'auto' }}>
                             <TorrentPanel detailTorrent={detailTorrent} torrents={torrents}/>
                         </SplitterPanel>
                     </Splitter>

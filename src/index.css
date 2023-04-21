@@ -48,3 +48,7 @@ html {
     overflow: auto;
 }
 
+.torrent-panel .p-tabview-panels {
+    height: 100%;
+    overflow: auto;
+}
