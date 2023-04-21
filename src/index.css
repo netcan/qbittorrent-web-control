@@ -45,7 +45,6 @@ html {
 }
 
 .torrent-list-panel {
-    height: 0%;
     overflow: auto;
 }
 
