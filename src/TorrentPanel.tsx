@@ -1,4 +1,4 @@
-import { PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties } from './Torrent';
+import { PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -111,11 +111,26 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
     );
 }
 
+const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
+    const [trackers, setTrackers] = useState<Tracker[]>([]);
+    useEffect(() => {
+        detailTorrent && torrentsTrackers(detailTorrent.hash)
+                            .then(setTrackers);
+    }, [detailTorrent, torrents]);
+
+    // console.log(trackers);
+
+    return (<></>);
+}
+
 const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
     return (
         <TabView className='h-full flex flex-column torrent-tab-panel'>
             <TabPanel header="General">
                 <DetailTorrent {...props}/>
+            </TabPanel>
+            <TabPanel header="Trackers">
+                <TorrentTrackers {...props}/>
             </TabPanel>
         </TabView>
     );

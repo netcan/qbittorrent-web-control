@@ -111,10 +111,29 @@ export enum PieceState {
     Downloaded = 2
 };
 
+export enum TrackerState {
+    Disabled = 0,
+    NotContacted = 1,
+    Working = 2,
+    Updating = 3,
+    ContactedNotWorking = 4,
+};
+
+export interface Tracker {
+    url: string,            //	Tracker url
+    status: TrackerState,   //	Tracker status. See the table below for possible values
+    tier: number,           //	Tracker priority tier. Lower tier trackers are tried before higher tiers. Tier numbers are valid when >= 0, < 0 is used as placeholder when tier does not exist for special entries (such as DHT).
+    num_peers: number,      //	Number of peers for current torrent, as reported by the tracker
+    num_seeds: number,      //	Number of seeds for current torrent, asreported by the tracker
+    num_leeches: number,    //	Number of leeches for current torrent, as reported by the tracker
+    num_downloaded: number, //	Number of completed downlods for current torrent, as reported by the tracker
+    msg: string,            //	Tracker message (there is no way of knowing what this message is - it's up to tracker admins)
+};
+
 type ApiName = 'torrents';
 type MethodName<T extends ApiName> =
     T extends 'torrents'
-        ? 'info' | 'properties' | 'pieceStates'
+        ? 'info' | 'properties' | 'pieceStates' | 'trackers'
         : unknown;
 
 async function qbApiFetch<T>(apiName: ApiName, methodName: MethodName<ApiName>, args?: Record<string, any>) {
@@ -142,6 +161,10 @@ export async function torrentsProperties(hash: string) {
 
 export async function torrentsPieceStates(hash: string) {
     return await qbApiFetch<PieceState[]>('torrents', 'pieceStates', {hash: hash}) ?? [];
+}
+
+export async function torrentsTrackers(hash: string) {
+    return await qbApiFetch<Tracker[]>('torrents', 'trackers', {hash: hash}) ?? [];
 }
 
 export enum StatusGroup {
