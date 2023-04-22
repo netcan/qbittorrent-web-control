@@ -1,3 +1,10 @@
+/*************************************************************************
+    > Copyright (c) 2023 Netcan
+    > File Name: Torrent.ts
+    > Blog: https://netcan.github.io/
+    > Mail: netcan1996@gmail.com
+************************************************************************/
+
 export type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
     | "missingFiles"       // Torrent data files is missing

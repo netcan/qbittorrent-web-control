@@ -1,3 +1,10 @@
+/*************************************************************************
+    > Copyright (c) 2023 Netcan
+    > File Name: MainWindow.tsx
+    > Blog: https://netcan.github.io/
+    > Mail: netcan1996@gmail.com
+************************************************************************/
+
 import TorrentList from './TorrentList';
 import { Torrent, torrentsInfo } from './Torrent';
 import React, { useState, useEffect, ChangeEvent } from 'react';

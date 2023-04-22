@@ -1,3 +1,10 @@
+/*************************************************************************
+    > Copyright (c) 2023 Netcan
+    > File Name: Utils.ts
+    > Blog: https://netcan.github.io/
+    > Mail: netcan1996@gmail.com
+************************************************************************/
+
 import { FilterMatchMode } from 'primereact/api';
 
 export function parseSize(size: number) {

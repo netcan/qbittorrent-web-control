@@ -1,3 +1,10 @@
+/*************************************************************************
+    > Copyright (c) 2023 Netcan
+    > File Name: TorrentList.tsx
+    > Blog: https://netcan.github.io/
+    > Mail: netcan1996@gmail.com
+************************************************************************/
+
 import React, { Dispatch, SetStateAction } from 'react';
 import { DataTableSelectionChangeEvent,
     DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';

@@ -1,3 +1,10 @@
+/*************************************************************************
+    > Copyright (c) 2023 Netcan
+    > File Name: SideBar.tsx
+    > Blog: https://netcan.github.io/
+    > Mail: netcan1996@gmail.com
+************************************************************************/
+
 import { useEffect, useState, Dispatch, SetStateAction  } from "react";
 import { Tree, TreeNodeTemplateOptions } from 'primereact/tree';
 import { DataTableFilterMeta } from 'primereact/datatable';

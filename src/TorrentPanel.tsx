@@ -1,3 +1,10 @@
+/*************************************************************************
+    > Copyright (c) 2023 Netcan
+    > File Name: TorrentPanel.tsx
+    > Blog: https://netcan.github.io/
+    > Mail: netcan1996@gmail.com
+************************************************************************/
+
 import { PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';

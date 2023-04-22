@@ -1,3 +1,10 @@
+/*************************************************************************
+    > Copyright (c) 2023 Netcan
+    > File Name: Login.tsx
+    > Blog: https://netcan.github.io/
+    > Mail: netcan1996@gmail.com
+************************************************************************/
+
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import Cookie from 'js-cookie';
