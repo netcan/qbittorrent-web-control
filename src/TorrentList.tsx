@@ -94,14 +94,12 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters,
         <TorrentTable
             value={torrents}
             dataKey="hash"
-            selectionMode="checkbox"
             filters={filters}
             globalFilterFields={['name', 'save_path', 'tracker']}
             selection={selectedTorrents}
-            onRowClick={(e) => { setDetailTorrent(e.data as Torrent.Torrent); }}
             onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent.Torrent[]>) => setSelectedTorrents(e.value)}
+            onRowClick={(e) => { setDetailTorrent(e.data as Torrent.Torrent); }}
             stateKey="torrent-list-state">
-            <Column selectionMode="multiple"></Column>
             { columns.map((col) => (
                 <Column sortable
                     header={col.label}

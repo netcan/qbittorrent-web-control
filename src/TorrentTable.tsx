@@ -6,6 +6,7 @@
 ************************************************************************/
 
 import { DataTableValueArray, DataTableRowClickEvent, DataTable, DataTableSelectionChangeEvent, DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
+import { Column } from 'primereact/column';
 
 interface TorrentTableProps<TValue extends DataTableValueArray> {
     value: TValue;
@@ -16,11 +17,12 @@ interface TorrentTableProps<TValue extends DataTableValueArray> {
     children?: React.ReactNode | undefined;
     dataKey?: string;
     globalFilterFields?: string[];
-    selectionMode?: 'single' | 'multiple' | 'checkbox' | 'radiobutton';
     stateKey?: string;
 }
 
 const TorrentTable: React.FC<TorrentTableProps<any>> = (props) => {
+    const { selection, onSelectionChange } = props;
+    const multipleSelection = Boolean(selection || onSelectionChange);
     return (
         <DataTable
             {...props}
@@ -29,13 +31,16 @@ const TorrentTable: React.FC<TorrentTableProps<any>> = (props) => {
             removableSort
             resizableColumns
             columnResizeMode="expand"
+            selectionMode={ multipleSelection ? 'checkbox' : 'single' }
             reorderableColumns
             scrollable scrollHeight='flex'
             selectionPageOnly={true}
-            dragSelection
+            dragSelection={ multipleSelection }
             stateStorage='local'
             rows={200} rowsPerPageOptions={[50, 100, 200, 500]}
         >
+        { multipleSelection && <Column selectionMode="multiple"></Column> }
+        { props.children }
         </DataTable>
     );
 }
