@@ -1,3 +1,5 @@
+import _ from 'lodash';
+
 export type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
     | "missingFiles"       // Torrent data files is missing
@@ -138,8 +140,35 @@ export async function torrentsProperties(hash: string) {
     return await qbApiFetch<TorrentGenericProp>('torrents', 'properties', {hash: hash});
 };
 
+function reducePieceStates(states: PieceState[]): PieceState[] {
+    const maxPieces = 512;
+    if (states.length <= maxPieces) {
+        console.log(states.length);
+        return states;
+    }
+    const group = Math.ceil(states.length / maxPieces);
+    /*
+       NotDownloaded, Downloading = Downloading
+       NotDownloaded, Downloaded = NotDownloaded
+       Downloading, Downloaded = Downloading
+     */
+    return _.chunk(states, group).map((g) => {
+        if (_.uniq(g).length === 1) {
+            return g[0];
+        } else {
+            const stateCount = _.countBy(g);
+            if (stateCount[PieceState.Downloading] > 0) {
+                return PieceState.Downloading;
+            } else {
+                return stateCount[PieceState.Downloaded] > stateCount[PieceState.NotDownloaded] ?
+                    PieceState.Downloaded : PieceState.NotDownloaded;
+            }
+        }
+    });
+}
+
 export async function torrentsPieceStates(hash: string) {
-    return await qbApiFetch<PieceState[]>('torrents', 'pieceStates', {hash: hash}) ?? [];
+    return reducePieceStates(await qbApiFetch<PieceState[]>('torrents', 'pieceStates', {hash: hash}) ?? []);
 }
 
 export enum StatusGroup {

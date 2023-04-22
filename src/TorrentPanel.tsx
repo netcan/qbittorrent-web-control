@@ -58,14 +58,14 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
                 </tr>
                 <tr>
                     <td className='torrent-field'>Time Active:</td><td className='torrent-value'>{torrentProp && `${parseDuration(torrentProp.time_elapsed, 2)} (seeded for ${parseDuration(torrentProp?.seeding_time, 2)})`} </td>
-                    <td className='torrent-field'>ETA:</td><td className='torrent-value'>{torrentProp && `${torrentProp.eta === 8640000 ? '∞' : parseDuration(torrentProp.eta)}`}</td>
+                    <td className='torrent-field'>ETA:</td><td className='torrent-value'>{torrentProp && `${torrentProp.eta === 8640000 ? '∞' : parseDuration(torrentProp.eta, 2)}`}</td>
                 </tr>
                 <tr>
                     <td className='torrent-field'>Added On:</td><td className='torrent-value'>{detailTorrent && parseEpoch(detailTorrent.added_on)}</td>
                     <td className='torrent-field'>Last Activity:</td><td className='torrent-value'>{detailTorrent && parseEpoch(detailTorrent.last_activity)}</td>
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Completed Size:</td><td className='torrent-value'>{detailTorrent && parseSize(detailTorrent.size)}</td>
+                    <td className='torrent-field'>Downloaded:</td><td className='torrent-value'>{detailTorrent && `${parseSize(detailTorrent.downloaded)} / ${parseSize(detailTorrent.size)}`}</td>
                     <td className='torrent-field'>Total Size:</td><td className='torrent-value'>{detailTorrent && parseSize(detailTorrent.total_size)}</td>
                 </tr>
                 <tr>
