@@ -42,6 +42,12 @@ html {
 
 .torrent-list .p-paginator {
     justify-content: left;
+    flex-wrap: nowrap;
+    overflow: hidden;
+}
+
+.torrent-list .p-paginator .p-paginator-pages {
+    min-width: max-content;
 }
 
 .torrent-tab-panel .p-tabview-panels {
