@@ -33,11 +33,11 @@ const MainWindow: React.FC = () => {
     );
 
     return (
-        <div style={{height: '100vh'}}>
+        <div className='h-screen flex flex-column'>
             <Menubar end={searchInput}/>
-            <Splitter style={{height: '100%'}}>
+            <Splitter className='h-full overflow-auto'>
                 <SplitterPanel
-                    style={{ overflow: 'auto' }}
+                    className='overflow-auto'
                     size={20}>
                     <SideBar
                         torrents={torrents}
@@ -46,10 +46,10 @@ const MainWindow: React.FC = () => {
                 </SplitterPanel>
 
                 <SplitterPanel
-                    style={{ overflow: 'auto' }}
+                    className='overflow-auto'
                     size={80}>
-                    <Splitter layout='vertical' style={{maxWidth: '100%'}}>
-                        <SplitterPanel className='torrent-list-panel' size={70}>
+                    <Splitter layout='vertical' className='w-full'>
+                        <SplitterPanel className='overflow-auto' size={70}>
                             <TorrentList
                                 torrents={torrents}
                                 filters={filters}
@@ -58,7 +58,7 @@ const MainWindow: React.FC = () => {
                                 setDetailTorrent={setDetailTorrent}
                             />
                         </SplitterPanel>
-                        <SplitterPanel size={30} style={{ overflow: 'auto' }}>
+                        <SplitterPanel size={30} className='overflow-auto'>
                             <TorrentPanel detailTorrent={detailTorrent} torrents={torrents}/>
                         </SplitterPanel>
                     </Splitter>

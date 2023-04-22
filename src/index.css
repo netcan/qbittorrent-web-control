@@ -44,11 +44,17 @@ html {
     justify-content: left;
 }
 
-.torrent-list-panel {
+.torrent-tab-panel .p-tabview-panels {
+    height: 100%;
     overflow: auto;
 }
 
-.torrent-panel .p-tabview-panels {
-    height: 100%;
-    overflow: auto;
+.torrent-tab-panel .torrent-field {
+    text-align: right;
+    width: 12%;
+    border-bottom: 1px solid rgb(204, 204, 204);
+}
+
+.torrent-tab-panel .torrent-value {
+    width: 38%;
 }
