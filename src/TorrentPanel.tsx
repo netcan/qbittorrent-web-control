@@ -3,6 +3,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
 import { Divider } from 'primereact/divider';
+import _ from 'lodash';
 
 interface TorrentPanelProp {
     detailTorrent: Torrent | null
@@ -16,22 +17,30 @@ const TorrentPieces: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
                             .then(setTorrentPieces);
     }, [detailTorrent, torrents]);
 
-    const pieceColor = (state: PieceState) => {
-        switch (state) {
-            case PieceState.NotDownloaded:
-                return 'surface-400';
-            case PieceState.Downloading:
-                return 'bg-orange-400';
-            case PieceState.Downloaded:
-                return 'bg-green-400';
-        }
-    };
+    const maxPieces = 512;
+    const group = Math.ceil(torrentPieces.length / maxPieces);
 
     return (
         <div className='torrent-pieces'>
-            {torrentPieces.map((state, index) => {
-                return (<i key={index} className={`torrent-piece ${pieceColor(state)}`}></i>);
-            })}
+            {
+                _.chunk(torrentPieces, group).map((g) => {
+                    const stateCount = _.countBy(g);
+                    if (stateCount[PieceState.Downloading] > 0) {
+                        return {
+                            className: `bg-orange-400`,
+                        };
+                    } else {
+                        return {
+                            className: `bg-green-400`,
+                            style: {
+                                filter: `saturate(${(stateCount[PieceState.Downloaded] ?? 0) / g.length})`
+                            }
+                        };
+                    }
+                }).map((prop, index) => {
+                    return (<i key={index} {...prop}/>)
+                })
+            }
         </div>
     );
 }

@@ -64,13 +64,8 @@ html {
     width: 38%;
 }
 
-.torrent-tab-panel .torrent-pieces {
-    line-height: 1rem;
-}
-
-.torrent-tab-panel .torrent-piece {
+.torrent-tab-panel .torrent-pieces > i {
     display: inline-block;
-    border: 1px solid white;
     margin: 1px;
     width: 1rem;
     height: 1rem;
