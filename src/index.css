@@ -35,17 +35,17 @@ html {
     padding-right:2px;
 }
 
-.torrent-list {
+.torrent-table {
     max-width: 100%;
 }
 
-.torrent-list .p-paginator {
+.torrent-table .p-paginator {
     justify-content: left;
     flex-wrap: nowrap;
     overflow: hidden;
 }
 
-.torrent-list .p-paginator .p-paginator-pages {
+.torrent-table .p-paginator .p-paginator-pages {
     min-width: max-content;
 }
 

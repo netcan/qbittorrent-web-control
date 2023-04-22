@@ -1,11 +1,12 @@
-import React, { useRef, Dispatch, SetStateAction } from 'react';
-import { DataTable, DataTableSelectionChangeEvent,
+import React, { Dispatch, SetStateAction } from 'react';
+import { DataTableSelectionChangeEvent,
     DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { ProgressBar } from 'primereact/progressbar';
 import * as Torrent from './Torrent';
 import { StatusGroup, StatusTable } from './Torrent';
 import { parseSpeed, parseEpoch, parseSize, getHostName } from './Utils';
+import TorrentTable from './TorrentTable';
 
 export function stateIcon(state: Torrent.TorrentState) {
     if (StatusTable.is(state, StatusGroup.DOWNLOAD)) {
@@ -82,32 +83,17 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters,
         { field: 'last_activity', label: 'Last Activity' },
         { field: 'completion_on', label: 'Completed On' },
     ];
-    const dt = useRef<DataTable<Torrent.Torrent[]>>(null);
-
     return (
-        <DataTable
-            className='torrent-list'
-            value={torrents} size='small'
-            stripedRows paginator
-            removableSort
+        <TorrentTable
+            value={torrents}
             dataKey="hash"
-            ref={dt}
             selectionMode="checkbox"
-            resizableColumns
-            columnResizeMode="expand"
-            reorderableColumns
             filters={filters}
             globalFilterFields={['name', 'save_path', 'tracker']}
-            scrollable scrollHeight='flex'
             selection={selectedTorrents}
-            selectionPageOnly={true}
             onRowClick={(e) => { setDetailTorrent(e.data as Torrent.Torrent); }}
             onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent.Torrent[]>) => setSelectedTorrents(e.value)}
-            dragSelection
-            stateStorage='local'
-            stateKey="torrent-list-state"
-            rows={200} rowsPerPageOptions={[50, 100, 200, 500]}
-        >
+            stateKey="torrent-list-state">
             <Column selectionMode="multiple"></Column>
             { columns.map((col) => (
                 <Column sortable
@@ -116,7 +102,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters,
                     body={parseField(col.field)}
                 />
             )) }
-        </DataTable>
+        </TorrentTable>
     );
 };
 

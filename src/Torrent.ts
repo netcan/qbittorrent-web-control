@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 export type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
     | "missingFiles"       // Torrent data files is missing
