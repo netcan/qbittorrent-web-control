@@ -17,11 +17,11 @@ interface TorrentTableProps<TArray extends DataTableValueArray> {
     filters?: DataTableFilterMeta;
     onSelectionChange?(event: DataTableSelectionChangeEvent<TArray>): void;
     onRowClick?(event: DataTableRowClickEvent): void;
-    dataKey?: string;
-    globalFilterFields?: string[];
+    dataKey?: keyof ElementOf<TArray> & string;
+    globalFilterFields?: (keyof ElementOf<TArray> & string)[];
     stateKey?: string;
     columns: {
-        field: (keyof ElementOf<TArray>) & string,
+        field: keyof ElementOf<TArray> & string,
         label: string,
     }[],
     parseColumn?(field: keyof ElementOf<TArray>, value: ElementOf<TArray>): React.ReactNode;
