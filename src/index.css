@@ -35,7 +35,6 @@ html {
     padding-right:2px;
 }
 
-
 .torrent-list {
     max-width: 100%;
 }
@@ -64,3 +63,15 @@ html {
 .torrent-tab-panel .torrent-value {
     width: 38%;
 }
+
+.torrent-tab-panel .torrent-pieces {
+    line-height: 10px;
+}
+
+.torrent-tab-panel .torrent-piece {
+    display: inline-block;
+    border: 1px solid white;
+    margin: 1px;
+    width: 10px;
+    height: 10px;
+};

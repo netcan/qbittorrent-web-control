@@ -1,18 +1,46 @@
-import { Torrent, TorrentGenericProp, torrentsProperties } from './Torrent';
+import { PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
+import { Divider } from 'primereact/divider';
 
 interface TorrentPanelProp {
     detailTorrent: Torrent | null
     torrents: Torrent[]
 }
 
+const TorrentPieces: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
+    const [torrentPieces, setTorrentPieces] = useState<PieceState[]>([]);
+    useEffect(() => {
+        detailTorrent && torrentsPieceStates(detailTorrent.hash)
+                            .then(setTorrentPieces);
+    }, [detailTorrent, torrents]);
+
+    const pieceColor = (state: PieceState) => {
+        switch (state) {
+            case PieceState.NotDownloaded:
+                return 'surface-400';
+            case PieceState.Downloading:
+                return 'bg-orange-400';
+            case PieceState.Downloaded:
+                return 'bg-green-400';
+        }
+    };
+
+    return (
+        <div className='torrent-pieces'>
+            {torrentPieces.map((state, index) => {
+                return (<i key={index} className={`torrent-piece ${pieceColor(state)}`}></i>);
+            })}
+        </div>
+    );
+}
+
 const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
     const [torrentProp, setTorrentProp] = useState<TorrentGenericProp>();
     useEffect(() => {
         detailTorrent && torrentsProperties(detailTorrent.hash)
-                            .then(res => setTorrentProp(res));
+                            .then(setTorrentProp);
     }, [detailTorrent, torrents]);
 
     return (
@@ -62,6 +90,12 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
                 </tr>
                 <tr>
                     <td className='torrent-field'>Comment:</td><td className='torrent-value' colSpan={3}>{torrentProp?.comment}</td>
+                </tr>
+                <tr>
+                    <td colSpan={4}>
+                        <Divider type='dotted'/>
+                        <TorrentPieces torrents={torrents} detailTorrent={detailTorrent}/>
+                    </td>
                 </tr>
             </tbody>
         </table>

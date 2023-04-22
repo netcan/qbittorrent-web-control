@@ -103,10 +103,16 @@ export interface TorrentGenericProp {
     up_speed: number,                   // Torrent upload speed (bytes/second)
 };
 
+export enum PieceState {
+    NotDownloaded = 0,
+    Downloading = 1,
+    Downloaded = 2
+};
+
 type ApiName = 'torrents';
 type MethodName<T extends ApiName> =
     T extends 'torrents'
-        ? 'info' | 'properties'
+        ? 'info' | 'properties' | 'pieceStates'
         : unknown;
 
 async function qbApiFetch<T>(apiName: ApiName, methodName: MethodName<ApiName>, args?: Record<string, any>) {
@@ -125,13 +131,16 @@ async function qbApiFetch<T>(apiName: ApiName, methodName: MethodName<ApiName>, 
 
 export async function torrentsInfo<S extends (_: Torrent[]) => unknown>(setter: S) {
     const torrents = await qbApiFetch<Torrent[]>('torrents', 'info');
-    setter(torrents ? torrents : []);
+    setter(torrents ?? []);
 }
 
 export async function torrentsProperties(hash: string) {
-    const properties = await qbApiFetch<TorrentGenericProp>('torrents', 'properties', {hash: hash});
-    return properties;
+    return await qbApiFetch<TorrentGenericProp>('torrents', 'properties', {hash: hash});
 };
+
+export async function torrentsPieceStates(hash: string) {
+    return await qbApiFetch<PieceState[]>('torrents', 'pieceStates', {hash: hash}) ?? [];
+}
 
 export enum StatusGroup {
     DOWNLOAD = "download",

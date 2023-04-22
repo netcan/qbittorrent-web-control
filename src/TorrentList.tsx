@@ -25,7 +25,7 @@ const parseField = (field: keyof Torrent.Torrent) => {
     return (torrent: Torrent.Torrent) => {
         switch (field) {
             case 'progress':
-                return (<ProgressBar value={torrent[field] * 100}/>);
+                return (<ProgressBar value={(torrent[field] * 100).toFixed(2)}/>);
             case 'size':
             case 'total_size':
             case 'uploaded':
