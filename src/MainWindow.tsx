@@ -15,6 +15,7 @@ import { Splitter, SplitterPanel } from 'primereact/splitter';
 import SideBar from './SideBar';
 import {createFilter} from './Utils';
 import TorrentPanel from './TorrentPanel';
+import _ from 'lodash';
 
 const MainWindow: React.FC = () => {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
@@ -29,8 +30,8 @@ const MainWindow: React.FC = () => {
 
     useEffect(() => {
         torrentsInfo(setTorrents);
-        const id = setInterval(torrentsInfo.bind(null, setTorrents), 3000);
-        return () => { clearInterval(id) };
+        const id = setInterval(_.partial(torrentsInfo, setTorrents), 3000);
+        return _.partial(clearInterval, id);
     }, []);
 
     const searchInput = (

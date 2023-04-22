@@ -7,22 +7,29 @@
 
 import { DataTableValueArray, DataTableRowClickEvent, DataTable, DataTableSelectionChangeEvent, DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import _ from 'lodash';
 
-interface TorrentTableProps<TValue extends DataTableValueArray> {
-    value: TValue;
-    selection?: DataTableSelection<TValue>;
+type ElementOf<T> = T extends (infer U)[] ? U : never;
+
+interface TorrentTableProps<TArray extends DataTableValueArray> {
+    value: TArray;
+    selection?: DataTableSelection<TArray>;
     filters?: DataTableFilterMeta;
-    onSelectionChange?(event: DataTableSelectionChangeEvent<TValue>): void;
+    onSelectionChange?(event: DataTableSelectionChangeEvent<TArray>): void;
     onRowClick?(event: DataTableRowClickEvent): void;
-    children?: React.ReactNode | undefined;
     dataKey?: string;
     globalFilterFields?: string[];
     stateKey?: string;
+    columns: {
+        field: (keyof ElementOf<TArray>) & string,
+        label: string,
+    }[],
+    parseColumn?(field: keyof ElementOf<TArray>, value: ElementOf<TArray>): React.ReactNode;
 }
 
-const TorrentTable: React.FC<TorrentTableProps<any>> = (props) => {
+const TorrentTable = <T extends DataTableValueArray>(props: TorrentTableProps<T>) => {
     const { selection, onSelectionChange } = props;
-    const multipleSelection = Boolean(selection || onSelectionChange);
+    const multipleSelection = Boolean(selection && onSelectionChange);
     return (
         <DataTable
             {...props}
@@ -40,7 +47,15 @@ const TorrentTable: React.FC<TorrentTableProps<any>> = (props) => {
             rows={200} rowsPerPageOptions={[50, 100, 200, 500]}
         >
         { multipleSelection && <Column selectionMode="multiple"></Column> }
-        { props.children }
+        { props.columns.map((col) => (
+            <Column
+                sortable
+                header={col.label}
+                key={col.field}
+                field={col.field}
+                body={props.parseColumn && _.partial(props.parseColumn, col.field)}
+            />
+        )) }
         </DataTable>
     );
 }

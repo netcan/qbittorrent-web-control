@@ -8,7 +8,6 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { DataTableSelectionChangeEvent,
     DataTableSelection, DataTableFilterMeta } from 'primereact/datatable';
-import { Column } from 'primereact/column';
 import { ProgressBar } from 'primereact/progressbar';
 import * as Torrent from './Torrent';
 import { StatusGroup, StatusTable } from './Torrent';
@@ -29,37 +28,35 @@ export function stateIcon(state: Torrent.TorrentState) {
     }
 }
 
-const parseField = (field: keyof Torrent.Torrent) => {
-    return (torrent: Torrent.Torrent) => {
-        switch (field) {
-            case 'progress':
-                return (<ProgressBar value={(torrent[field] * 100).toFixed(2)}/>);
-            case 'size':
+const parseField = (field: keyof Torrent.Torrent, torrent: Torrent.Torrent) => {
+    switch (field) {
+        case 'progress':
+            return (<ProgressBar value={(torrent[field] * 100).toFixed(2)}/>);
+        case 'size':
             case 'total_size':
             case 'uploaded':
-                return parseSize(torrent[field]);
-            case 'ratio':
-                return torrent[field].toFixed(2);
-            case 'num_seeds':
-                return `${torrent[field]} (${torrent.num_complete})`;
-            case 'num_leechs':
-                return `${torrent[field]} (${torrent.num_incomplete})`;
-            case 'dlspeed':
+            return parseSize(torrent[field]);
+        case 'ratio':
+            return torrent[field].toFixed(2);
+        case 'num_seeds':
+            return `${torrent[field]} (${torrent.num_complete})`;
+        case 'num_leechs':
+            return `${torrent[field]} (${torrent.num_incomplete})`;
+        case 'dlspeed':
             case 'upspeed':
-                return parseSpeed(torrent[field]);
-            case 'added_on':
+            return parseSpeed(torrent[field]);
+        case 'added_on':
             case 'completion_on':
             case 'last_activity':
             case 'seen_complete':
-                return parseEpoch(torrent[field]);
-            case 'tracker':
-                return getHostName(torrent[field]);
-            case 'name':
-                return (<><span className={`pi ${stateIcon(torrent.state)}`}/> {torrent[field]}</>);
-            default:
-                return torrent[field];
-        }
-    };
+            return parseEpoch(torrent[field]);
+        case 'tracker':
+            return getHostName(torrent[field]);
+        case 'name':
+            return (<><span className={`pi ${stateIcon(torrent.state)}`}/> {torrent[field]}</>);
+        default:
+            return torrent[field];
+    }
 }
 
 interface TorrentListProps {
@@ -99,15 +96,9 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters,
             selection={selectedTorrents}
             onSelectionChange={(e: DataTableSelectionChangeEvent<Torrent.Torrent[]>) => setSelectedTorrents(e.value)}
             onRowClick={(e) => { setDetailTorrent(e.data as Torrent.Torrent); }}
-            stateKey="torrent-list-state">
-            { columns.map((col) => (
-                <Column sortable
-                    header={col.label}
-                    key={col.field} field={col.field}
-                    body={parseField(col.field)}
-                />
-            )) }
-        </TorrentTable>
+            stateKey="torrent-list-state"
+            columns={columns}
+            parseColumn={parseField}/>
     );
 };
 
