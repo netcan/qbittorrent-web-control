@@ -136,6 +136,25 @@ export interface Tracker {
     msg: string,            //	Tracker message (there is no way of knowing what this message is - it's up to tracker admins)
 };
 
+export interface Peer {
+    country?: string,
+    country_code?: string,
+    ip: string,
+    port: number,
+    connection: string,
+    flags: string,
+    flags_desc: string,
+    client: string,
+    peer_id_client: string,
+    progress: number,
+    dl_speed: number,
+    up_speed: number,
+    downloaded: number,
+    uploaded: number,
+    relevance: number,
+    files?: string,
+};
+
 type ApiName = 'torrents';
 type MethodName<T extends ApiName> =
     T extends 'torrents'

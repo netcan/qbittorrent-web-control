@@ -57,9 +57,9 @@ html {
     min-width: max-content;
 }
 
-.torrent-tab-panel .p-tabview-panels {
+.torrent-tab-panel div.p-tabview-panels {
     height: 100%;
-    padding: 1rem;
+    padding: 0.8rem;
     overflow: auto;
 }
 
