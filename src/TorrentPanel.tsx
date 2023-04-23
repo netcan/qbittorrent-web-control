@@ -5,7 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { parseETA, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker } from './Torrent';
+import { parseETA, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -126,8 +126,6 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
                             .then(setTrackers);
     }, [detailTorrent, torrents]);
 
-    // console.log(trackers);
-
     const columns: { field: keyof Tracker, label: string }[] = [
         { field: 'url', label: 'URL' },
         { field: 'status', label: 'Status' },
@@ -145,6 +143,8 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
             case 'num_leeches':
             case 'num_downloaded':
                 return tracker[field] >= 0 ? tracker[field] : 'N/A';
+            case 'status':
+                return TrackerState[tracker[field]];
             default:
                 return tracker[field];
         }
