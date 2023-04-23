@@ -28,11 +28,11 @@ interface TorrentTableProps<TArray extends DataTableValueArray> {
 }
 
 const TorrentTable = <T extends DataTableValueArray>(props: TorrentTableProps<T>) => {
-    const { selection, onSelectionChange } = props;
-    const multipleSelection = Boolean(selection && onSelectionChange);
+    const { columns, parseColumn, ...rest } = props;
+    const multipleSelection = Boolean(props.selection && props.onSelectionChange);
     return (
         <DataTable
-            {...props}
+            {...rest}
             className='torrent-table'
             stripedRows paginator
             removableSort
@@ -47,13 +47,13 @@ const TorrentTable = <T extends DataTableValueArray>(props: TorrentTableProps<T>
             rows={200} rowsPerPageOptions={[50, 100, 200, 500]}
         >
         { multipleSelection && <Column selectionMode="multiple"></Column> }
-        { props.columns.map((col) => (
+        { columns.map((col) => (
             <Column
                 sortable
                 header={col.label}
                 key={col.field}
                 field={col.field}
-                body={props.parseColumn && _.partial(props.parseColumn, col.field)}
+                body={parseColumn && _.partial(parseColumn, col.field)}
             />
         )) }
         </DataTable>

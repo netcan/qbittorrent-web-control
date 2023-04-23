@@ -10,6 +10,7 @@ import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
 import { Divider } from 'primereact/divider';
+import TorrentTable from './TorrentTable';
 import _ from 'lodash';
 
 interface TorrentPanelProp {
@@ -127,7 +128,37 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
 
     // console.log(trackers);
 
-    return (<></>);
+    const columns: { field: keyof Tracker, label: string }[] = [
+        { field: 'url', label: 'URL' },
+        { field: 'status', label: 'Status' },
+        { field: 'num_peers', label: 'Peers' },
+        { field: 'num_seeds', label: 'Seeds' },
+        { field: 'num_leeches', label: 'Leeches' },
+        { field: 'num_downloaded', label: 'Times Downloaded' },
+        { field: 'msg', label: 'Message' },
+    ];
+
+    const parseField = (field: keyof Tracker, tracker: Tracker) => {
+        switch (field) {
+            case 'num_peers':
+            case 'num_seeds':
+            case 'num_leeches':
+            case 'num_downloaded':
+                return tracker[field] >= 0 ? tracker[field] : 'N/A';
+            default:
+                return tracker[field];
+        }
+    };
+
+    return (
+        <TorrentTable
+            value={trackers}
+            dataKey="url"
+            stateKey="torrent-list-state"
+            columns={columns}
+            parseColumn={parseField}
+            />
+    );
 }
 
 const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
@@ -136,7 +167,7 @@ const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
             <TabPanel header="General">
                 <DetailTorrent {...props}/>
             </TabPanel>
-            <TabPanel header="Trackers">
+            <TabPanel header="Trackers" className='h-full'>
                 <TorrentTrackers {...props}/>
             </TabPanel>
         </TabView>

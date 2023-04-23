@@ -59,6 +59,7 @@ html {
 
 .torrent-tab-panel .p-tabview-panels {
     height: 100%;
+    padding: 1rem;
     overflow: auto;
 }
 
