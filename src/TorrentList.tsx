@@ -50,6 +50,8 @@ const parseField = (field: keyof Torrent.Torrent, torrent: Torrent.Torrent) => {
             case 'last_activity':
             case 'seen_complete':
             return parseEpoch(torrent[field]);
+        case 'eta':
+            return Torrent.parseETA(torrent[field]);
         case 'tracker':
             return getHostName(torrent[field]);
         case 'name':
@@ -73,6 +75,7 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters,
     const columns: { field: keyof Torrent.Torrent, label: string }[] = [
         { field: 'tracker', label: 'Tracker' },
         { field: 'name', label: 'Name' },
+        { field: 'eta', label: 'ETA' },
         { field: 'total_size', label: 'Total Size' },
         { field: 'progress', label: 'Progress' },
         { field: 'ratio', label: 'Ratio' },

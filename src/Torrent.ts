@@ -4,6 +4,7 @@
     > Blog: https://netcan.github.io/
     > Mail: netcan1996@gmail.com
 ************************************************************************/
+import { parseDuration } from './Utils';
 
 export type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
@@ -215,3 +216,6 @@ export const StatusTable: StatusTableType = {
     }
 }
 
+export function parseETA(eta: number) {
+    return eta === 8640000 ? '∞' : parseDuration(eta, 2);
+}

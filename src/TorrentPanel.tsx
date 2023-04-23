@@ -5,7 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker } from './Torrent';
+import { parseETA, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -74,7 +74,7 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
                 </tr>
                 <tr>
                     <td className='torrent-field'>Time Active:</td><td className='torrent-value'>{torrentProp && `${parseDuration(torrentProp.time_elapsed, 2)} (seeded for ${parseDuration(torrentProp?.seeding_time, 2)})`} </td>
-                    <td className='torrent-field'>ETA:</td><td className='torrent-value'>{torrentProp && `${torrentProp.eta === 8640000 ? '∞' : parseDuration(torrentProp.eta, 2)}`}</td>
+                    <td className='torrent-field'>ETA:</td><td className='torrent-value'>{torrentProp && parseETA(torrentProp.eta)}</td>
                 </tr>
                 <tr>
                     <td className='torrent-field'>Added On:</td><td className='torrent-value'>{detailTorrent && parseEpoch(detailTorrent.added_on)}</td>
