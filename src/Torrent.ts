@@ -155,41 +155,59 @@ export interface Peer {
     files?: string,
 };
 
-type ApiName = 'torrents';
-type MethodName<T extends ApiName> =
-    T extends 'torrents'
-        ? 'info' | 'properties' | 'pieceStates' | 'trackers'
-        : unknown;
+export interface PeersInfo {
+    peers?: {
+        [key: string]: Peer
+    },
+    peers_removed?: {
+        [key: string]: Peer
+    }
+    show_flags?: boolean,
+    full_update?: boolean,
+    rid: number,
+};
 
-async function qbApiFetch<T>(apiName: ApiName, methodName: MethodName<ApiName>, args?: Record<string, any>) {
-    try {
-        const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(args)}`);
-        if (response.ok) {
-            const res: T = await response.json();
-            return res;
-        } else {
-            console.error('Failed to fetch torrents data');
+type ApiName = 'torrents' | 'sync';
+type MethodName<T extends ApiName> =
+    T extends 'torrents' ?
+    'info' | 'properties' | 'pieceStates' | 'trackers' :
+    T extends 'sync' ?
+    'torrentPeers':
+    never;
+
+function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>) {
+    return async <R>(args?: Record<string, any>) => {
+        try {
+            const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(args)}`);
+            if (response.ok) {
+                return await response.json() as R;
+            } else {
+                console.error('Failed to fetch torrents data');
+            }
+        } catch (error) {
+            console.error('Error while fetching torrents data', error);
         }
-    } catch (error) {
-        console.error('Error while fetching torrents data', error);
     }
 }
 
-export async function torrentsInfo<S extends (_: Torrent[]) => unknown>(setter: S) {
-    const torrents = await qbApiFetch<Torrent[]>('torrents', 'info');
-    setter(torrents ?? []);
+export async function torrentsInfo() {
+    return await qbApiFetch('torrents', 'info')<Torrent[]>() ?? [];
 }
 
 export async function torrentsProperties(hash: string) {
-    return await qbApiFetch<TorrentGenericProp>('torrents', 'properties', {hash: hash});
+    return await qbApiFetch('torrents', 'properties')<TorrentGenericProp>({hash});
 };
 
 export async function torrentsPieceStates(hash: string) {
-    return await qbApiFetch<PieceState[]>('torrents', 'pieceStates', {hash: hash}) ?? [];
+    return await qbApiFetch('torrents', 'pieceStates')<PieceState[]>({hash}) ?? [];
 }
 
 export async function torrentsTrackers(hash: string) {
-    return await qbApiFetch<Tracker[]>('torrents', 'trackers', {hash: hash}) ?? [];
+    return await qbApiFetch('torrents', 'trackers')<Tracker[]>({hash}) ?? [];
+}
+
+export async function torrentPeers(hash: string, rid?: number) {
+    return await qbApiFetch('sync', 'torrentPeers',)<PeersInfo>({ hash, rid });
 }
 
 export enum StatusGroup {

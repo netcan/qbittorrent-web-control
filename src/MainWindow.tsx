@@ -29,8 +29,8 @@ const MainWindow: React.FC = () => {
     };
 
     useEffect(() => {
-        torrentsInfo(setTorrents);
-        const id = setInterval(_.partial(torrentsInfo, setTorrents), 3000);
+        torrentsInfo().then(setTorrents);
+        const id = setInterval(() => torrentsInfo().then(setTorrents), 3000);
         return _.partial(clearInterval, id);
     }, []);
 
