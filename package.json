@@ -25,7 +25,6 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
-  "proxy": "http://192.168.124.7:8080",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -54,6 +53,7 @@
     "@types/js-cookie": "^3.0.3",
     "@types/lodash": "^4.14.194",
     "@types/path-browserify": "^1.0.0",
-    "@types/react-table": "^7.7.14"
+    "@types/react-table": "^7.7.14",
+    "http-proxy-middleware": "^2.0.6"
   }
 }

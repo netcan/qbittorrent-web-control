@@ -5,7 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { parseETA, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState } from './Torrent';
+import { parseETA, PeersInfo, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -161,6 +161,17 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
     );
 }
 
+const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
+    const [peersInfo, setPeersInfo] = useState<PeersInfo>();
+    useEffect(() => {
+        detailTorrent && torrentPeers(detailTorrent.hash)
+                            .then(setPeersInfo);
+    }, [detailTorrent, torrents]);
+    console.log(peersInfo);
+
+    return (<></>);
+}
+
 const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
     return (
         <TabView className='h-full flex flex-column torrent-tab-panel'>
@@ -169,6 +180,9 @@ const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
             </TabPanel>
             <TabPanel header="Trackers" className='h-full'>
                 <TorrentTrackers {...props}/>
+            </TabPanel>
+            <TabPanel header="Peers" className='h-full'>
+                <TorrentPeers {...props}/>
             </TabPanel>
         </TabView>
     );
