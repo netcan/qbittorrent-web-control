@@ -47,10 +47,19 @@ html {
     max-width: 100%;
 }
 
+.torrent-table th {
+    padding: 0.3rem!important;
+}
+
+.torrent-table td {
+    padding: 0.3rem!important;
+}
+
 .torrent-table .p-paginator {
     justify-content: left;
     flex-wrap: nowrap;
     overflow: hidden;
+    padding: 0.1rem;
 }
 
 .torrent-table .p-paginator .p-paginator-pages {
