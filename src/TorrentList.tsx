@@ -101,7 +101,9 @@ const TorrentList: React.FC<TorrentListProps> = ({ torrents, filters,
             onRowClick={(e) => { setDetailTorrent(e.data as Torrent.Torrent); }}
             stateKey="torrent-list-state"
             columns={columns}
-            parseColumn={parseField}/>
+            parseColumn={parseField}
+            paging={true}
+        />
     );
 };
 

@@ -25,16 +25,21 @@ interface TorrentTableProps<TArray extends DataTableValueArray> {
         label: string,
     }[],
     parseColumn?(field: keyof ElementOf<TArray>, value: ElementOf<TArray>): React.ReactNode;
+    paging?: boolean,
 }
 
 const TorrentTable = <T extends DataTableValueArray>(props: TorrentTableProps<T>) => {
-    const { columns, parseColumn, ...rest } = props;
+    const { columns, parseColumn, paging, ...rest } = props;
     const multipleSelection = Boolean(props.selection && props.onSelectionChange);
+    const pagingOpt = paging ? {
+        rows: 200,
+        rowsPerPageOptions: [50, 100, 200, 500],
+        paginator: true,
+    } : null;
     return (
         <DataTable
-            {...rest}
             className='torrent-table'
-            stripedRows paginator
+            stripedRows
             removableSort
             resizableColumns
             columnResizeMode="expand"
@@ -44,7 +49,8 @@ const TorrentTable = <T extends DataTableValueArray>(props: TorrentTableProps<T>
             selectionPageOnly={true}
             dragSelection={ multipleSelection }
             stateStorage='local'
-            rows={200} rowsPerPageOptions={[50, 100, 200, 500]}
+            {...rest}
+            {...pagingOpt}
         >
         { multipleSelection && <Column selectionMode="multiple"></Column> }
         { columns.map((col) => (
