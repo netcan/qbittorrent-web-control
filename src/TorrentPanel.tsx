@@ -36,9 +36,7 @@ const TorrentPieces: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
                 _.chunk(torrentPieces, group).map((g) => {
                     const stateCount = _.countBy(g);
                     if (stateCount[PieceState.Downloading] > 0) {
-                        return {
-                            className: `bg-orange-400`,
-                        };
+                        return { className: `bg-orange-400`, };
                     } else {
                         return {
                             className: `bg-green-400`,
@@ -159,7 +157,7 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
             stateKey="trackers-state"
             columns={columns}
             parseColumn={parseField}
-            />
+        />
     );
 }
 
@@ -180,7 +178,6 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     }, [detailTorrent, torrents]);
 
     const columns: { field: keyof Peer, label: string }[] = [
-        { field: 'country_code', label: 'Country/Region' },
         { field: 'ip',           label: 'IP' },
         { field: 'port',         label: 'Port' },
         { field: 'connection',   label: 'Connection' },
@@ -207,9 +204,12 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             case 'downloaded':
             case 'uploaded':
                 return parseSize(peer[field]);
-            case 'country_code':
+            case 'ip':
                 return (
-                    <span className='text-2xl'> { getUnicodeFlagIcon(peer[field] ?? '') } </span>
+                    <>
+                        <span className='text-xl'> { getUnicodeFlagIcon(peer.country_code ?? '') } </span>
+                        { peer[field] }
+                    </>
                 );
             default:
                 return peer[field];
