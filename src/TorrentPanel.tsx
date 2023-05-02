@@ -5,12 +5,14 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { parseETA, PeersInfo, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState } from './Torrent';
+import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
 import { Divider } from 'primereact/divider';
 import TorrentTable from './TorrentTable';
+import { ProgressBar } from 'primereact/progressbar';
+import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import _ from 'lodash';
 
 interface TorrentPanelProp {
@@ -127,13 +129,13 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
     }, [detailTorrent, torrents]);
 
     const columns: { field: keyof Tracker, label: string }[] = [
-        { field: 'url', label: 'URL' },
-        { field: 'status', label: 'Status' },
-        { field: 'num_peers', label: 'Peers' },
-        { field: 'num_seeds', label: 'Seeds' },
-        { field: 'num_leeches', label: 'Leeches' },
+        { field: 'url',            label: 'URL' },
+        { field: 'status',         label: 'Status' },
+        { field: 'num_peers',      label: 'Peers' },
+        { field: 'num_seeds',      label: 'Seeds' },
+        { field: 'num_leeches',    label: 'Leeches' },
         { field: 'num_downloaded', label: 'Times Downloaded' },
-        { field: 'msg', label: 'Message' },
+        { field: 'msg',            label: 'Message' },
     ];
 
     const parseField = (field: keyof Tracker, tracker: Tracker) => {
@@ -154,7 +156,7 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
         <TorrentTable
             value={trackers}
             dataKey="url"
-            stateKey="torrent-list-state"
+            stateKey="trackers-state"
             columns={columns}
             parseColumn={parseField}
             />
@@ -162,14 +164,67 @@ const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) 
 }
 
 const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
-    const [peersInfo, setPeersInfo] = useState<PeersInfo>();
+    type PeerWithKey = Peer & { dataKey: string };
+    const [peers, setPeers] = useState<PeerWithKey[]>([]);
     useEffect(() => {
-        detailTorrent && torrentPeers(detailTorrent.hash)
-                            .then(setPeersInfo);
+        if (!detailTorrent) { return; }
+        torrentPeers(detailTorrent.hash).then((peersInfo) => {
+            if (!peersInfo || !peersInfo.full_update) { return; }
+            setPeers(
+                _.reduce(peersInfo.peers, (acc, peer, key) => {
+                    acc.push({dataKey: key, ...peer});
+                    return acc;
+                }, [] as PeerWithKey[])
+            );
+        });
     }, [detailTorrent, torrents]);
-    console.log(peersInfo);
 
-    return (<></>);
+    const columns: { field: keyof Peer, label: string }[] = [
+        { field: 'country_code', label: 'Country/Region' },
+        { field: 'ip',           label: 'IP' },
+        { field: 'port',         label: 'Port' },
+        { field: 'connection',   label: 'Connection' },
+        { field: 'flags',        label: 'Flags' },
+        { field: 'client',       label: 'Client' },
+        { field: 'progress',     label: 'Progress' },
+        { field: 'dl_speed',     label: 'Down Speed' },
+        { field: 'up_speed',     label: 'Up Speed' },
+        { field: 'downloaded',   label: 'Downloaded' },
+        { field: 'uploaded',     label: 'Uploaded' },
+        { field: 'relevance',    label: 'Relevance' },
+        { field: 'files',        label: 'Files' },
+    ];
+
+    const parseField = (field: keyof Peer, peer: Peer) => {
+        switch (field) {
+            case 'progress':
+                return (<ProgressBar value={(peer[field] * 100).toFixed(2)}/>);
+            case 'relevance':
+                return `${(peer[field] * 100).toFixed(2)} %`;
+            case 'dl_speed':
+            case 'up_speed':
+                return parseSpeed(peer[field]);
+            case 'downloaded':
+            case 'uploaded':
+                return parseSize(peer[field]);
+            case 'country_code':
+                return (
+                    <span className='text-2xl'> { getUnicodeFlagIcon(peer[field] ?? '') } </span>
+                );
+            default:
+                return peer[field];
+        }
+    }
+
+    return (
+        <TorrentTable
+            value={peers}
+            dataKey="dataKey"
+            stateKey="peers-state"
+            columns={columns}
+            parseColumn={parseField}
+        />
+    );
 }
 
 const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
