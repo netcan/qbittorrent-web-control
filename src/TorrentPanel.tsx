@@ -62,8 +62,8 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
 
     const F = (field: string, content: any, valueOpts?: object) => {
         return [
-            <td className='torrent-field'>{field}:</td>,
-            <td className='torrent-value' {...valueOpts}>{content}</td>
+            <td className='torrent-field' key={field}>{field}:</td>,
+            <td className='torrent-value' key={`value-${content}`} {...valueOpts}>{content}</td>
         ];
     };
 
