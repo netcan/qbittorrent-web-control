@@ -31,11 +31,11 @@ interface TorrentTableProps<TArray extends DataTableValueArray> {
 const TorrentTable = <T extends DataTableValueArray>(props: TorrentTableProps<T>) => {
     const { columns, parseColumn, paging, ...rest } = props;
     const multipleSelection = Boolean(props.selection && props.onSelectionChange);
-    const pagingOpt = paging ? {
+    const pagingOpt = paging && {
         rows: 200,
         rowsPerPageOptions: [50, 100, 200, 500],
-        paginator: true,
-    } : null;
+        paginator: true
+    };
     return (
         <DataTable
             className='torrent-table'
