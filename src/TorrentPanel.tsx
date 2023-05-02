@@ -60,62 +60,67 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
                             .then(setTorrentProp);
     }, [detailTorrent, torrents]);
 
+    const F = (field: string, content: any, valueOpts?: object) => {
+        return [
+            <td className='torrent-field'>{field}:</td>,
+            <td className='torrent-value' {...valueOpts}>{content}</td>
+        ];
+    };
+
     return (
+        <>
         <table className='w-full'>
             <tbody>
                 <tr>
-                    <td className='torrent-field'>Name:</td><td className='torrent-value' colSpan={3}>{detailTorrent?.name}</td>
+                    {F('Name', detailTorrent?.name, {colSpan: 3})}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Save Path:</td><td className='torrent-value' colSpan={3}>{detailTorrent?.save_path}</td>
+                    {F('Save Path', detailTorrent?.save_path, {colSpan: 3})}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Hash:</td><td className='torrent-value'>{detailTorrent?.hash}</td>
-                    <td className='torrent-field'>Reannounce In:</td><td className='torrent-value'>{torrentProp && parseDuration(torrentProp.reannounce)}</td>
+                    {F('Hash', detailTorrent?.hash)}
+                    {F('Reannounce In', torrentProp && parseDuration(torrentProp.reannounce))}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Time Active:</td><td className='torrent-value'>{torrentProp && `${parseDuration(torrentProp.time_elapsed, 2)} (seeded for ${parseDuration(torrentProp?.seeding_time, 2)})`} </td>
-                    <td className='torrent-field'>ETA:</td><td className='torrent-value'>{torrentProp && parseETA(torrentProp.eta)}</td>
+                    {F('Time Active', torrentProp && `${parseDuration(torrentProp.time_elapsed, 2)} (seeded for ${parseDuration(torrentProp?.seeding_time, 2)})`)}
+                    {F('ETA', torrentProp && parseETA(torrentProp.eta))}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Added On:</td><td className='torrent-value'>{detailTorrent && parseEpoch(detailTorrent.added_on)}</td>
-                    <td className='torrent-field'>Last Activity:</td><td className='torrent-value'>{detailTorrent && parseEpoch(detailTorrent.last_activity)}</td>
+                    {F('Added On', detailTorrent && parseEpoch(detailTorrent.added_on))}
+                    {F('Last Activity', detailTorrent && parseEpoch(detailTorrent.last_activity))}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Downloaded:</td><td className='torrent-value'>{detailTorrent && `${parseSize(detailTorrent.downloaded)} / ${parseSize(detailTorrent.size)}`}</td>
-                    <td className='torrent-field'>Total Size:</td><td className='torrent-value'>{detailTorrent && parseSize(detailTorrent.total_size)}</td>
+                    {F('Downloaded', detailTorrent && `${parseSize(detailTorrent.downloaded)} / ${parseSize(detailTorrent.size)}`)}
+                    {F('Total Size', detailTorrent && parseSize(detailTorrent.total_size))}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Uploaded:</td><td className='torrent-value'>{detailTorrent && parseSize(detailTorrent.uploaded)}</td>
-                    <td className='torrent-field'>Share Ratio:</td><td className='torrent-value'>{torrentProp?.share_ratio.toFixed(2)}</td>
+                    {F('Uploaded', detailTorrent && parseSize(detailTorrent.uploaded))}
+                    {F('Share Ratio', torrentProp?.share_ratio.toFixed(2))}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Upload Speed:</td><td className='torrent-value'>{torrentProp && `${parseSpeed(torrentProp.up_speed)} (${parseSpeed(torrentProp.up_speed_avg)} avg.)`}</td>
-                    <td className='torrent-field'>Download Speed:</td><td className='torrent-value'>{torrentProp && `${parseSpeed(torrentProp.dl_speed)} (${parseSpeed(torrentProp.dl_speed_avg)} avg.)`}</td>
+                    {F('Upload Speed', torrentProp && `${parseSpeed(torrentProp.up_speed)} (${parseSpeed(torrentProp.up_speed_avg)} avg.)`)}
+                    {F('Download Speed', torrentProp && `${parseSpeed(torrentProp.dl_speed)} (${parseSpeed(torrentProp.dl_speed_avg)} avg.)`)}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Seeds</td><td className='torrent-value'>{torrentProp && `${torrentProp.seeds} (${torrentProp.seeds_total} total)`}</td>
-                    <td className='torrent-field'>Peers</td><td className='torrent-value'>{torrentProp && `${torrentProp.peers} (${torrentProp.peers_total} total)`}</td>
+                    {F('Seeds', torrentProp && `${torrentProp.seeds} (${torrentProp.seeds_total} total)`)}
+                    {F('Peers', torrentProp && `${torrentProp.peers} (${torrentProp.peers_total} total)`)}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Create On:</td><td className='torrent-value'>{torrentProp && parseEpoch(torrentProp.creation_date)}</td>
-                    <td className='torrent-field'>Create By:</td><td className='torrent-value'>{torrentProp?.created_by}</td>
+                    {F('Create On', torrentProp && parseEpoch(torrentProp.creation_date))}
+                    {F('Create By', torrentProp?.created_by)}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Pieces:</td><td className='torrent-value'>{ torrentProp && `${torrentProp.pieces_num} x ${parseSize(torrentProp.piece_size)} (have ${torrentProp.pieces_have})` }</td>
-                    <td className='torrent-field'>Status:</td><td className='torrent-value'>{detailTorrent?.state}</td>
+                    {F('Pieces', torrentProp && `${torrentProp.pieces_num} x ${parseSize(torrentProp.piece_size)} (have ${torrentProp.pieces_have})`)}
+                    {F('Status', detailTorrent?.state)}
                 </tr>
                 <tr>
-                    <td className='torrent-field'>Comment:</td><td className='torrent-value' colSpan={3}>{torrentProp?.comment}</td>
-                </tr>
-                <tr>
-                    <td colSpan={4}>
-                        <Divider type='dotted'/>
-                        <TorrentPieces torrents={torrents} detailTorrent={detailTorrent}/>
-                    </td>
+                    {F('Comment', torrentProp?.comment, {colSpan: 3})}
                 </tr>
             </tbody>
         </table>
+        <Divider type='dotted'/>
+        <TorrentPieces torrents={torrents} detailTorrent={detailTorrent}/>
+        </>
     );
 }
 
