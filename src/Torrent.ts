@@ -5,6 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 import { parseDuration } from './Utils';
+import _ from 'lodash';
 
 export type TorrentState =
     | "error"              // Some error occurred, applies to paused torrents
@@ -126,14 +127,14 @@ export enum TrackerState {
 };
 
 export interface Tracker {
-    url: string,            //	Tracker url
-    status: TrackerState,   //	Tracker status. See the table below for possible values
-    tier: number,           //	Tracker priority tier. Lower tier trackers are tried before higher tiers. Tier numbers are valid when >= 0, < 0 is used as placeholder when tier does not exist for special entries (such as DHT).
-    num_peers: number,      //	Number of peers for current torrent, as reported by the tracker
-    num_seeds: number,      //	Number of seeds for current torrent, asreported by the tracker
-    num_leeches: number,    //	Number of leeches for current torrent, as reported by the tracker
-    num_downloaded: number, //	Number of completed downlods for current torrent, as reported by the tracker
-    msg: string,            //	Tracker message (there is no way of knowing what this message is - it's up to tracker admins)
+    url: string,            // Tracker url
+    status: TrackerState,   // Tracker status. See the table below for possible values
+    tier: number,           // Tracker priority tier. Lower tier trackers are tried before higher tiers. Tier numbers are valid when >= 0, < 0 is used as placeholder when tier does not exist for special entries (such as DHT).
+    num_peers: number,      // Number of peers for current torrent, as reported by the tracker
+    num_seeds: number,      // Number of seeds for current torrent, asreported by the tracker
+    num_leeches: number,    // Number of leeches for current torrent, as reported by the tracker
+    num_downloaded: number, // Number of completed downlods for current torrent, as reported by the tracker
+    msg: string,            // Tracker message (there is no way of knowing what this message is - it's up to tracker admins)
 };
 
 export interface Peer {
@@ -167,10 +168,28 @@ export interface PeersInfo {
     rid: number,
 };
 
+export enum FilePriority {
+    DoNotDownload = 0,
+    Normal = 1,
+    High = 6,
+    Maximal = 7
+};
+
+export interface File {
+    index: number;          // File index
+    name: string;           // File name (including relative path)
+    size: number;           // File size (bytes)
+    progress: number;       // File progress (percentage/100)
+    priority: FilePriority; // File priority. See possible values here below
+    is_seed: boolean;       // True if file is seeding/complete
+    piece_range: number[];  // The first number is the starting piece index and the second number is the ending piece index (inclusive)
+    availability: number;   // Percentage of file pieces currently available (percentage/100)
+};
+
 type ApiName = 'torrents' | 'sync';
 type MethodName<T extends ApiName> =
     T extends 'torrents' ?
-    'info' | 'properties' | 'pieceStates' | 'trackers' :
+    'info' | 'properties' | 'pieceStates' | 'trackers' | 'files' :
     T extends 'sync' ?
     'torrentPeers':
     never;
@@ -178,7 +197,8 @@ type MethodName<T extends ApiName> =
 function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>) {
     return async <R>(args?: Record<string, any>) => {
         try {
-            const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(args)}`);
+            const validArgs = _.omitBy(args, _.isUndefined);
+            const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(validArgs)}`);
             if (response.ok) {
                 return await response.json() as R;
             } else {
@@ -208,6 +228,10 @@ export async function torrentsTrackers(hash: string) {
 
 export async function torrentPeers(hash: string, rid?: number) {
     return await qbApiFetch('sync', 'torrentPeers',)<PeersInfo>({ hash, rid });
+}
+
+export async function torrentFiles(hash: string, indexes?: string) {
+    return await qbApiFetch('torrents', 'files',)<File[]>({ hash, indexes }) ?? [];
 }
 
 export enum StatusGroup {

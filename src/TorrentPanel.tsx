@@ -5,7 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer } from './Torrent';
+import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer, File, torrentFiles } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -23,8 +23,7 @@ interface TorrentPanelProp {
 const TorrentPieces: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
     const [torrentPieces, setTorrentPieces] = useState<PieceState[]>([]);
     useEffect(() => {
-        detailTorrent && torrentsPieceStates(detailTorrent.hash)
-                            .then(setTorrentPieces);
+        detailTorrent && torrentsPieceStates(detailTorrent.hash).then(setTorrentPieces);
     }, [detailTorrent, torrents]);
 
     const maxPieces = 512;
@@ -56,8 +55,7 @@ const TorrentPieces: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
 const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
     const [torrentProp, setTorrentProp] = useState<TorrentGenericProp>();
     useEffect(() => {
-        detailTorrent && torrentsProperties(detailTorrent.hash)
-                            .then(setTorrentProp);
+        detailTorrent && torrentsProperties(detailTorrent.hash).then(setTorrentProp);
     }, [detailTorrent, torrents]);
 
     const F = (field: string, content: any, valueOpts?: object) => {
@@ -127,8 +125,7 @@ const DetailTorrent: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) =>
 const TorrentTrackers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
     const [trackers, setTrackers] = useState<Tracker[]>([]);
     useEffect(() => {
-        detailTorrent && torrentsTrackers(detailTorrent.hash)
-                            .then(setTrackers);
+        detailTorrent && torrentsTrackers(detailTorrent.hash).then(setTrackers);
     }, [detailTorrent, torrents]);
 
     const columns: { field: keyof Tracker, label: string }[] = [
@@ -232,6 +229,16 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     );
 }
 
+const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
+    const [files, setFiles] = useState<File[]>([]);
+    useEffect(() => {
+        detailTorrent && torrentFiles(detailTorrent.hash).then(setFiles);
+    }, [detailTorrent, torrents]);
+    console.log(files);
+
+    return (<></>);
+}
+
 const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
     return (
         <TabView className='h-full flex flex-column torrent-tab-panel'>
@@ -243,6 +250,9 @@ const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {
             </TabPanel>
             <TabPanel header="Peers" className='h-full'>
                 <TorrentPeers {...props}/>
+            </TabPanel>
+            <TabPanel header="Files" className='h-full'>
+                <TorrentFiles {...props}/>
             </TabPanel>
         </TabView>
     );
