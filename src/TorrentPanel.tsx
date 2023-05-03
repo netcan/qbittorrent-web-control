@@ -5,7 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer, File, torrentFiles } from './Torrent';
+import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer, File, FilePriority, torrentFiles } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -13,6 +13,10 @@ import { Divider } from 'primereact/divider';
 import TorrentTable from './TorrentTable';
 import { ProgressBar } from 'primereact/progressbar';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
+import { TreeTable } from 'primereact/treetable';
+import TreeNode from "primereact/treenode";
+import { Column } from 'primereact/column';
+import path from "path-browserify";
 import _ from 'lodash';
 
 interface TorrentPanelProp {
@@ -229,14 +233,83 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     );
 }
 
-const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
-    const [files, setFiles] = useState<File[]>([]);
-    useEffect(() => {
-        detailTorrent && torrentFiles(detailTorrent.hash).then(setFiles);
-    }, [detailTorrent, torrents]);
+const getFileTree = (files: File[]): TreeNode[] => {
     console.log(files);
 
-    return (<></>);
+    let res: TreeNode[] = [];
+    let folderNodes: Record<string, TreeNode> = {};
+    class FolderData {
+        index: number = -1;
+        name: string;
+        size: number = 0;
+        progress: number = 0;
+        priority: FilePriority | undefined = undefined;
+        availability: number = 0;
+        constructor(name: string) {
+            this.name = name;
+        }
+    };
+    const folderData: Record<string, FolderData> = { };
+
+    for (const file of files) {
+        let folderPath = '';
+        for (const folder of file.name.split('/')) { // TODO: handle win path
+            const next = path.join(folderPath, folder);
+            if (! (next in folderData)) {
+                folderData[next] = new FolderData(folder);
+                const folderItem: TreeNode = {
+                    key: next,
+                    data: folderData[next],
+                    children: []
+                };
+                if (folderPath === '') {
+                    res.push(folderItem);
+                } else {
+                    folderNodes[folderPath].children?.push(folderItem);
+                }
+                folderNodes[next] = folderItem;
+            }
+            const data = folderData[next];
+            data.size += file.size;
+            data.progress += file.progress;
+            if (file.availability !== -1) {
+                data.availability += file.availability;
+            }
+            if (file.name === next) {
+                data.index = file.index;
+            }
+            if (data.priority === undefined) {
+                data.priority = file.priority;
+            } else if (data.priority !== file.priority) {
+                data.priority = FilePriority.Mixed;
+            }
+            folderPath = next;
+        }
+    }
+    return res;
+};
+
+const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
+    const [fileTree, setFileTree] = useState<TreeNode[]>([]);
+    useEffect(() => {
+        detailTorrent && torrentFiles(detailTorrent.hash)
+        .then((fileTree) => {
+            setFileTree(getFileTree(fileTree));
+        });
+    }, [detailTorrent, torrents]);
+    console.log(fileTree);
+
+    return (
+        <TreeTable
+            value={fileTree}
+        >
+            <Column field="name" header="Name" expander/>
+            <Column field="size" header="Total Size"/>
+            <Column field="progress" header="Progress"/>
+            <Column field="priority" header="Priority"/>
+            <Column field="availability" header="Availability"/>
+        </TreeTable>
+    );
 }
 
 const TorrentPanel: React.FC<TorrentPanelProp> = (props) => {

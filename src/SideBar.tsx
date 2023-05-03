@@ -176,12 +176,9 @@ const SideBar: React.FC<SideBarProps> = ({ torrents, setFilters }) => {
         setNodes(getItems(torrents));
     }, [torrents]);
 
-    const parseLen = (len: number) => {
-        return len ? (<Badge value={len} className='surface-500'></Badge>) : (<></>);
-    };
     const parseContent = (node: TreeNode, options: TreeNodeTemplateOptions) => {
         return <span className={options.className}>
-            {node.label} {parseLen(node.data?.counter)}
+            {node.label} {node.data?.counter ? <Badge value={node.data?.counter} className='surface-500'></Badge> : ''}
             {node.data?.size ? <span className='item-torrent-size text-500'>[{parseSize(node.data?.size)}]</span> : ''}
         </span>;
     };

@@ -169,6 +169,7 @@ export interface PeersInfo {
 };
 
 export enum FilePriority {
+    Mixed = -1,
     DoNotDownload = 0,
     Normal = 1,
     High = 6,
