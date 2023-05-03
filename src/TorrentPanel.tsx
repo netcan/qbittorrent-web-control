@@ -271,7 +271,9 @@ const getFileTree = (files: File[]): TreeNode[] => {
             }
             const data = folderData[next];
             data.size += file.size;
-            data.progress += file.progress;
+            const childNum = (folderNodes[next].children ?? []).length;
+            data.progress = (data.progress * childNum + file.progress) / (childNum + 1);
+
             if (file.availability !== -1) {
                 data.availability += file.availability;
             }
