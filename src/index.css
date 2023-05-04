@@ -13,6 +13,10 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  overflow: hidden;
+  height: 100%;
+  margin: 0px;
 }
 
 code {
@@ -25,8 +29,6 @@ html {
 }
 
 #root {
-    overflow: hidden;
-    height: 100vh;
 }
 
 .torrent-sidebar .p-treenode {

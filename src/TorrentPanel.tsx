@@ -304,7 +304,7 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
         const content = node.data[field];
         switch (field) {
             case 'name':
-                return (<><span className={`text-xl pi ${node.children?.length == 0 ? 'pi-file' : 'pi-folder'}`}/> {content}</>);
+                return (<><span className={`text-xl pi ${node.children?.length === 0 ? 'pi-file' : 'pi-folder'}`}/> {content}</>);
             case 'size':
                 return parseSize(content);
             case 'progress':
