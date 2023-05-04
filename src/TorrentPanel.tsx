@@ -13,7 +13,7 @@ import { Divider } from 'primereact/divider';
 import TorrentTable from './TorrentTable';
 import { ProgressBar } from 'primereact/progressbar';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
-import { TreeTable } from 'primereact/treetable';
+import { TreeTable, TreeTableSelectionKeysType, TreeTableSelectionEvent } from 'primereact/treetable';
 import TreeNode from "primereact/treenode";
 import { Column } from 'primereact/column';
 import path from "path-browserify";
@@ -233,22 +233,21 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     );
 }
 
-const getFileTree = (files: File[]): TreeNode[] => {
-    console.log(files);
+class FolderData {
+    index: number = -1;
+    name: string;
+    size: number = 0;
+    progress: number = 0;
+    priority: FilePriority | undefined = undefined;
+    availability: number = 0;
+    constructor(name: string) {
+        this.name = name;
+    }
+};
 
+const getFileTree = (files: File[]): TreeNode[] => {
     let res: TreeNode[] = [];
     let folderNodes: Record<string, TreeNode> = {};
-    class FolderData {
-        index: number = -1;
-        name: string;
-        size: number = 0;
-        progress: number = 0;
-        priority: FilePriority | undefined = undefined;
-        availability: number = 0;
-        constructor(name: string) {
-            this.name = name;
-        }
-    };
     const folderData: Record<string, FolderData> = { };
 
     for (const file of files) {
@@ -293,23 +292,58 @@ const getFileTree = (files: File[]): TreeNode[] => {
 
 const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
     const [fileTree, setFileTree] = useState<TreeNode[]>([]);
+    const [selectedFiles, setSelectedFiles] = useState<TreeTableSelectionKeysType | null>(null);;
     useEffect(() => {
         detailTorrent && torrentFiles(detailTorrent.hash)
         .then((fileTree) => {
             setFileTree(getFileTree(fileTree));
         });
     }, [detailTorrent, torrents]);
-    console.log(fileTree);
+
+    const parseField = (field: keyof FolderData, node: TreeNode) => {
+        const content = node.data[field];
+        switch (field) {
+            case 'size':
+                return parseSize(content);
+            case 'progress':
+                return (<ProgressBar value={(content * 100).toFixed(2)}/>);
+            case 'priority':
+                return FilePriority[content];
+            default:
+                return content;
+        }
+    }
+
+    const columns: { field: keyof FolderData, label: string, expander?: boolean }[] = [
+        { field: 'name', label: 'Name', expander: true },
+        { field: 'size', label: 'Size' },
+        { field: 'progress', label: 'Progress' },
+        { field: 'priority', label: 'Priority' },
+        { field: 'availability', label: 'Availability' },
+    ];
 
     return (
         <TreeTable
             value={fileTree}
+            className='torrent-files h-full'
+            removableSort
+            resizableColumns
+            columnResizeMode='expand'
+            selectionMode='checkbox'
+            selectionKeys={selectedFiles}
+            onSelectionChange={(e: TreeTableSelectionEvent) => setSelectedFiles(e.value)}
         >
-            <Column field="name" header="Name" expander/>
-            <Column field="size" header="Total Size"/>
-            <Column field="progress" header="Progress"/>
-            <Column field="priority" header="Priority"/>
-            <Column field="availability" header="Availability"/>
+            { columns.map(column => (
+                <Column
+                    sortable
+                    className={`torrent-files-${column.field}`}
+                    key={column.field}
+                    field={column.field}
+                    header={column.label}
+                    expander={column.expander}
+                    body={_.partial(parseField, column.field)}
+                />
+            )) }
         </TreeTable>
     );
 }

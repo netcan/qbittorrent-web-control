@@ -53,7 +53,7 @@ const TorrentTable = <T extends DataTableValueArray>(props: TorrentTableProps<T>
             {...pagingOpt}
         >
         { multipleSelection && <Column selectionMode="multiple"></Column> }
-        { columns.map((col) => (
+        { columns.map(col => (
             <Column
                 sortable
                 header={col.label}
