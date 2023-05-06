@@ -197,16 +197,12 @@ type MethodName<T extends ApiName> =
 
 function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>) {
     return async <R>(args?: Record<string, any>) => {
-        try {
-            const validArgs = _.omitBy(args, _.isUndefined);
-            const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(validArgs)}`);
-            if (response.ok) {
-                return await response.json() as R;
-            } else {
-                console.error('Failed to fetch torrents data');
-            }
-        } catch (error) {
-            console.error('Error while fetching torrents data', error);
+        const validArgs = _.omitBy(args, _.isUndefined);
+        const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(validArgs)}`);
+        if (response.ok) {
+            return await response.json() as R;
+        } else {
+            throw Error("Failed to fetch torrents data");
         }
     }
 }

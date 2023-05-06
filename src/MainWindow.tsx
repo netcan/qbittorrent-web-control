@@ -16,12 +16,15 @@ import SideBar from './SideBar';
 import {createFilter} from './Utils';
 import TorrentPanel from './TorrentPanel';
 import _ from 'lodash';
+import Login from './Login';
 
 const MainWindow: React.FC = () => {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
     const [detailTorrent, setDetailTorrent] = useState<Torrent | null>(null);
     const [selectedTorrents, setSelectedTorrents] = useState([] as DataTableSelection<Torrent[]>);
     const [filters, setFilters] = useState<DataTableFilterMeta>({ });
+    const [needLogin, setNeedLogin] = useState<boolean>(false);
+
     const searchWordOnChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFilters((prev) => {
             return {...prev, global: createFilter(e.target.value)};
@@ -29,10 +32,16 @@ const MainWindow: React.FC = () => {
     };
 
     useEffect(() => {
-        torrentsInfo().then(setTorrents);
-        const id = setInterval(() => torrentsInfo().then(setTorrents), 3000);
+        if (needLogin) { return; }
+        const updateTorrent = () => {
+            torrentsInfo()
+            .then(setTorrents)
+            .catch(_ => { setNeedLogin(true); })
+        };
+        updateTorrent();
+        const id = setInterval(updateTorrent, 3000);
         return _.partial(clearInterval, id);
-    }, []);
+    }, [needLogin]);
 
     const searchInput = (
         <InputText placeholder="Search"
@@ -41,38 +50,41 @@ const MainWindow: React.FC = () => {
     );
 
     return (
-        <div className='h-screen flex flex-column'>
-            <Menubar end={searchInput}/>
-            <Splitter className='h-full overflow-auto'>
-                <SplitterPanel
-                    className='overflow-auto'
-                    size={20}>
-                    <SideBar
-                        torrents={torrents}
-                        setFilters={setFilters}
-                    />
-                </SplitterPanel>
+        <>
+            <Login needLogin={needLogin} setNeedLogin={setNeedLogin}/>
+            <div className='h-screen flex flex-column'>
+                <Menubar end={searchInput}/>
+                <Splitter className='h-full overflow-auto'>
+                    <SplitterPanel
+                        className='overflow-auto'
+                        size={20}>
+                        <SideBar
+                            torrents={torrents}
+                            setFilters={setFilters}
+                        />
+                    </SplitterPanel>
 
-                <SplitterPanel
-                    className='overflow-auto'
-                    size={80}>
-                    <Splitter layout='vertical' className='w-full'>
-                        <SplitterPanel className='overflow-auto' size={70}>
-                            <TorrentList
-                                torrents={torrents}
-                                filters={filters}
-                                selectedTorrents={selectedTorrents}
-                                setSelectedTorrents={setSelectedTorrents}
-                                setDetailTorrent={setDetailTorrent}
-                            />
-                        </SplitterPanel>
-                        <SplitterPanel size={30} className='overflow-auto'>
-                            <TorrentPanel detailTorrent={detailTorrent} torrents={torrents}/>
-                        </SplitterPanel>
-                    </Splitter>
-                </SplitterPanel>
-            </Splitter>
-        </div>
+                    <SplitterPanel
+                        className='overflow-auto'
+                        size={80}>
+                        <Splitter layout='vertical' className='w-full'>
+                            <SplitterPanel className='overflow-auto' size={70}>
+                                <TorrentList
+                                    torrents={torrents}
+                                    filters={filters}
+                                    selectedTorrents={selectedTorrents}
+                                    setSelectedTorrents={setSelectedTorrents}
+                                    setDetailTorrent={setDetailTorrent}
+                                />
+                            </SplitterPanel>
+                            <SplitterPanel size={30} className='overflow-auto'>
+                                <TorrentPanel detailTorrent={detailTorrent} torrents={torrents}/>
+                            </SplitterPanel>
+                        </Splitter>
+                    </SplitterPanel>
+                </Splitter>
+            </div>
+        </>
     );
 };
 
