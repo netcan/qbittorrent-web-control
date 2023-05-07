@@ -26,7 +26,7 @@ const MainWindow: React.FC = () => {
     const [needLogin, setNeedLogin] = useState<boolean>(false);
 
     const searchWordOnChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setFilters((prev) => {
+        setFilters(prev => {
             return {...prev, global: createFilter(e.target.value)};
         });
     };
@@ -36,7 +36,7 @@ const MainWindow: React.FC = () => {
         const updateTorrent = () => {
             torrentsInfo()
             .then(setTorrents)
-            .catch(_ => { setNeedLogin(true); })
+            .catch(_ => setNeedLogin(true))
         };
         updateTorrent();
         const id = setInterval(updateTorrent, 3000);
