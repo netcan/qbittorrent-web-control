@@ -21,15 +21,9 @@ class ItemData {
     size: number = 0;
 };
 
-class StatusData extends ItemData {
-    kind = 'StatusData' as const
-};
-class TrackersData extends ItemData {
-    kind = 'TrackersData' as const
-};
-class FoldersData extends ItemData {
-    kind = 'FoldersData' as const
-};
+class StatusData extends ItemData { };
+class TrackersData extends ItemData { };
+class FoldersData extends ItemData { };
 
 const getItems = (torrents: Torrent.Torrent[]) => {
     const getItem = <T extends ItemData>(keyName: string, labelName: string, icon: string,
@@ -64,7 +58,7 @@ const getItems = (torrents: Torrent.Torrent[]) => {
 
     const folderData: Record<string, FoldersData> = { };
     let folderNodes: { [key: string]: TreeNode; } = { };
-    const foldersItem = getItem('folders', 'Folders', 'pi-folder', new FoldersData());
+    const foldersItem = getItem('folders', 'Folders', 'pi-folder', new ItemData());
 
     for (const torrent of torrents) {
         Object.values(StatusGroup).forEach((sg) => {
