@@ -13,7 +13,7 @@ import { Divider } from 'primereact/divider';
 import TorrentTable from './TorrentTable';
 import { ProgressBar } from 'primereact/progressbar';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
-import { TreeTable, TreeTableSelectionKeysType, TreeTableSelectionEvent } from 'primereact/treetable';
+import { TreeTable, TreeTableSelectionKeysType, TreeTableCheckboxSelectionKeyType, TreeTableSelectionEvent } from 'primereact/treetable';
 import TreeNode from "primereact/treenode";
 import { Column } from 'primereact/column';
 import path from "path-browserify";
@@ -247,9 +247,9 @@ class FolderData {
 
 const getFileTree = (files: File[]): [TreeNode[], TreeTableSelectionKeysType] => {
     let fileTree: TreeNode[] = [];
-    let selectedFiles: TreeTableSelectionKeysType = {};
+    let selectedFiles: Record<string, TreeTableCheckboxSelectionKeyType> = {};
 
-    let folderNodes: Record<string, TreeNode> = {};
+    const folderNodes: Record<string, TreeNode> = {};
     const folderData: Record<string, FolderData> = { };
 
     for (const file of files) {
@@ -269,9 +269,7 @@ const getFileTree = (files: File[]): [TreeNode[], TreeTableSelectionKeysType] =>
                     folderNodes[folderPath].children?.push(folderItem);
                 }
                 folderNodes[next] = folderItem;
-                selectedFiles[next] = {
-                    checked: file.priority !== FilePriority.DoNotDownload
-                };
+                selectedFiles[next] = { checked: true }
             }
             const data = folderData[next];
             data.size += file.size;
@@ -281,14 +279,24 @@ const getFileTree = (files: File[]): [TreeNode[], TreeTableSelectionKeysType] =>
             if (file.availability !== -1) {
                 data.availability += file.availability;
             }
-            if (file.name === next) {
-                data.index = file.index;
-            }
+
             if (data.priority === undefined) {
                 data.priority = file.priority;
             } else if (data.priority !== file.priority) {
                 data.priority = FilePriority.Mixed;
             }
+
+            const isChecked = file.priority !== FilePriority.DoNotDownload;
+            if (file.name === next) {
+                data.index = file.index;
+                selectedFiles[next].checked = isChecked;
+            } else {
+                if (selectedFiles[next].checked != isChecked) {
+                    selectedFiles[next].checked = false;
+                    selectedFiles[next].partialChecked = (data.priority !== FilePriority.DoNotDownload);
+                }
+            }
+
             folderPath = next;
         }
     }
