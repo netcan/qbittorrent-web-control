@@ -245,8 +245,10 @@ class FolderData {
     }
 };
 
-const getFileTree = (files: File[]): TreeNode[] => {
-    let res: TreeNode[] = [];
+const getFileTree = (files: File[]): [TreeNode[], TreeTableSelectionKeysType] => {
+    let fileTree: TreeNode[] = [];
+    let selectedFiles: TreeTableSelectionKeysType = {};
+
     let folderNodes: Record<string, TreeNode> = {};
     const folderData: Record<string, FolderData> = { };
 
@@ -262,11 +264,14 @@ const getFileTree = (files: File[]): TreeNode[] => {
                     children: []
                 };
                 if (folderPath === '') {
-                    res.push(folderItem);
+                    fileTree.push(folderItem);
                 } else {
                     folderNodes[folderPath].children?.push(folderItem);
                 }
                 folderNodes[next] = folderItem;
+                selectedFiles[next] = {
+                    checked: file.priority !== FilePriority.DoNotDownload
+                };
             }
             const data = folderData[next];
             data.size += file.size;
@@ -287,7 +292,7 @@ const getFileTree = (files: File[]): TreeNode[] => {
             folderPath = next;
         }
     }
-    return res;
+    return [fileTree, selectedFiles];
 };
 
 const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
@@ -295,8 +300,10 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     const [selectedFiles, setSelectedFiles] = useState<TreeTableSelectionKeysType | null>(null);;
     useEffect(() => {
         detailTorrent && torrentFiles(detailTorrent.hash)
-        .then((fileTree) => {
-            setFileTree(getFileTree(fileTree));
+        .then((files) => {
+            const [fileTree, selectedFiles] = getFileTree(files);
+            setFileTree(fileTree);
+            setSelectedFiles(selectedFiles);
         });
     }, [detailTorrent, torrents]);
 
