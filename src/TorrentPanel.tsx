@@ -308,14 +308,20 @@ const getFileTree = (files: File[], hash: string): [TreeNode[], TreeTableSelecti
 const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
     const [fileTree, setFileTree] = useState<TreeNode[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<TreeTableSelectionKeysType | null>(null);;
-    useEffect(() => {
+    const updateFileTree = () => {
         detailTorrent && torrentFiles(detailTorrent.hash)
         .then((files) => {
-            const [fileTree, selectedFiles] = getFileTree(files, detailTorrent.hash);
-            setFileTree(fileTree);
-            setSelectedFiles(selectedFiles);
+            const [fileTree_, selectedFiles_] = getFileTree(files, detailTorrent.hash);
+            if (!_.isEqual(fileTree, fileTree_)) {
+                setFileTree(fileTree_);
+            }
+
+            if (!_.isEqual(selectedFiles, selectedFiles_)) {
+                setSelectedFiles(selectedFiles_);
+            }
         });
-    }, [detailTorrent, torrents]);
+    }
+    useEffect(updateFileTree, [detailTorrent, torrents]);
 
     const parseField = (field: keyof FolderData, node: TreeNode) => {
         const content = node.data[field];
@@ -342,7 +348,6 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     ];
 
     const onSelect = (node: TreeNode, selected: boolean) => {
-        console.log(node, selected);
         const dfs = (node: TreeNode) => {
             let res = node.data.index === -1 ? [] : [node.data.index];
             for (const c of node.children ?? []) {
@@ -351,7 +356,8 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             return res;
         }
         const ids = dfs(node);
-        setFilePrio(node.data.hash, ids, selected ? FilePriority.Normal : FilePriority.DoNotDownload);
+        setFilePrio(node.data.hash, ids, selected ? FilePriority.Normal : FilePriority.DoNotDownload)
+        .then(updateFileTree);
     };
 
     return (

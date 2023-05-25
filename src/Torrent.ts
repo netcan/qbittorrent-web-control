@@ -196,7 +196,7 @@ type MethodName<T extends ApiName> =
     never;
 
 function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>, m: 'GET' | 'POST' = 'GET') {
-    return async <R>(args?: Record<string, any>) => {
+    return async <R = void>(args?: Record<string, any>) => {
         const validArgs = _.omitBy(args, _.isUndefined);
         const response = await (() => {
             switch (m) {
@@ -204,7 +204,6 @@ function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>, m:
                     return fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(validArgs)}`);
                 }
                 case 'POST': {
-                    console.log(`body = ${new URLSearchParams(validArgs)}`)
                     return fetch(`/api/v2/${apiName}/${methodName}`, {
                         method: 'POST',
                         headers: { "content-type": "application/x-www-form-urlencoded; charset=UTF-8", },
@@ -214,7 +213,7 @@ function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>, m:
             }
         })();
         if (response.ok) {
-            return await response.json() as R;
+            return await response.json().catch(_ => {}) as R;
         } else {
             throw Error("Failed to fetch torrents data");
         }
