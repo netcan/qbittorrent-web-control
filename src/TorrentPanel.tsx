@@ -177,8 +177,7 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             if (!peersInfo || !peersInfo.full_update) { return; }
             setPeers(
                 _.reduce(peersInfo.peers, (acc, peer, key) => {
-                    acc.push({dataKey: key, ...peer});
-                    return acc;
+                    return [...acc, {dataKey: key, ...peer}];
                 }, [] as PeerWithKey[])
             );
         });
