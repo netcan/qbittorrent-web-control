@@ -5,7 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer, File, FilePriority, torrentFiles } from './Torrent';
+import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer, File, FilePriority, torrentFiles, setFilePrio } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -18,6 +18,7 @@ import TreeNode from "primereact/treenode";
 import { Column } from 'primereact/column';
 import path from "path-browserify";
 import _ from 'lodash';
+import {Tree} from 'primereact/tree';
 
 interface TorrentPanelProp {
     detailTorrent: Torrent | null
@@ -238,14 +239,16 @@ class FolderData {
     name: string;
     size: number = 0;
     progress: number = 0;
+    hash: string;
     priority: FilePriority | undefined = undefined;
     availability: number = 0;
-    constructor(name: string) {
+    constructor(name: string, hash: string) {
         this.name = name;
+        this.hash = hash;
     }
 };
 
-const getFileTree = (files: File[]): [TreeNode[], TreeTableSelectionKeysType] => {
+const getFileTree = (files: File[], hash: string): [TreeNode[], TreeTableSelectionKeysType] => {
     let fileTree: TreeNode[] = [];
     let selectedFiles: Record<string, TreeTableCheckboxSelectionKeyType> = {};
 
@@ -257,7 +260,7 @@ const getFileTree = (files: File[]): [TreeNode[], TreeTableSelectionKeysType] =>
         for (const folder of file.name.split('/')) { // TODO: handle win path
             const next = path.join(folderPath, folder);
             if (! (next in folderData)) {
-                folderData[next] = new FolderData(folder);
+                folderData[next] = new FolderData(folder, hash);
                 const folderItem: TreeNode = {
                     key: next,
                     data: folderData[next],
@@ -291,7 +294,7 @@ const getFileTree = (files: File[]): [TreeNode[], TreeTableSelectionKeysType] =>
                 data.index = file.index;
                 selectedFiles[next].checked = isChecked;
             } else {
-                if (selectedFiles[next].checked != isChecked) {
+                if (selectedFiles[next].checked !== isChecked) {
                     selectedFiles[next].checked = false;
                     selectedFiles[next].partialChecked = (data.priority !== FilePriority.DoNotDownload);
                 }
@@ -309,7 +312,7 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     useEffect(() => {
         detailTorrent && torrentFiles(detailTorrent.hash)
         .then((files) => {
-            const [fileTree, selectedFiles] = getFileTree(files);
+            const [fileTree, selectedFiles] = getFileTree(files, detailTorrent.hash);
             setFileTree(fileTree);
             setSelectedFiles(selectedFiles);
         });
@@ -339,6 +342,19 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
         { field: 'availability', label: 'Availability' },
     ];
 
+    const onSelect = (node: TreeNode, selected: boolean) => {
+        console.log(node, selected);
+        const dfs = (node: TreeNode) => {
+            let res = node.data.index === -1 ? [] : [node.data.index];
+            for (const c of node.children ?? []) {
+                res.push(...dfs(c));
+            }
+            return res;
+        }
+        const ids = dfs(node);
+        setFilePrio(node.data.hash, ids, selected ? FilePriority.Normal : FilePriority.DoNotDownload);
+    };
+
     return (
         <TreeTable
             value={fileTree}
@@ -348,7 +364,8 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             columnResizeMode='expand'
             selectionMode='checkbox'
             selectionKeys={selectedFiles}
-            onSelectionChange={(e: TreeTableSelectionEvent) => setSelectedFiles(e.value)}
+            onSelect={e => onSelect(e.node, true)}
+            onUnselect={e => onSelect(e.node, false)}
         >
             { columns.map(column => (
                 <Column

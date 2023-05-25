@@ -190,15 +190,29 @@ export interface File {
 type ApiName = 'torrents' | 'sync';
 type MethodName<T extends ApiName> =
     T extends 'torrents' ?
-    'info' | 'properties' | 'pieceStates' | 'trackers' | 'files' :
+    'info' | 'properties' | 'pieceStates' | 'trackers' | 'files' | 'filePrio':
     T extends 'sync' ?
     'torrentPeers':
     never;
 
-function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>) {
+function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>, m: 'GET' | 'POST' = 'GET') {
     return async <R>(args?: Record<string, any>) => {
         const validArgs = _.omitBy(args, _.isUndefined);
-        const response = await fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(validArgs)}`);
+        const response = await (() => {
+            switch (m) {
+                case 'GET': {
+                    return fetch(`/api/v2/${apiName}/${methodName}?${new URLSearchParams(validArgs)}`);
+                }
+                case 'POST': {
+                    console.log(`body = ${new URLSearchParams(validArgs)}`)
+                    return fetch(`/api/v2/${apiName}/${methodName}`, {
+                        method: 'POST',
+                        headers: { "content-type": "application/x-www-form-urlencoded; charset=UTF-8", },
+                        body: new URLSearchParams(validArgs)
+                    });
+                }
+            }
+        })();
         if (response.ok) {
             return await response.json() as R;
         } else {
@@ -229,6 +243,12 @@ export async function torrentPeers(hash: string, rid?: number) {
 
 export async function torrentFiles(hash: string, indexes?: string) {
     return await qbApiFetch('torrents', 'files',)<File[]>({ hash, indexes }) ?? [];
+}
+
+export async function setFilePrio(hash: string, ids: number[], priority: FilePriority) {
+    return await qbApiFetch('torrents', 'filePrio', 'POST')(
+        { hash, id: ids.join('|'), priority }
+    );
 }
 
 export enum StatusGroup {
