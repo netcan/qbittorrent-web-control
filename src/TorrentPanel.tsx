@@ -14,7 +14,7 @@ import TorrentTable from './TorrentTable';
 import { ProgressBar } from 'primereact/progressbar';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import { TreeTable, TreeTableSelectionKeysType, TreeTableCheckboxSelectionKeyType, TreeTableSelectionEvent } from 'primereact/treetable';
-import TreeNode from "primereact/treenode";
+import { TreeNode } from "primereact/treenode";
 import { Column } from 'primereact/column';
 import path from "path-browserify";
 import _ from 'lodash';

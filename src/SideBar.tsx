@@ -9,7 +9,7 @@ import { useEffect, useState, Dispatch, SetStateAction  } from "react";
 import { Tree, TreeNodeTemplateOptions } from 'primereact/tree';
 import { DataTableFilterMeta } from 'primereact/datatable';
 import { Badge } from 'primereact/badge';
-import TreeNode from "primereact/treenode";
+import { TreeNode } from "primereact/treenode";
 import { FilterMatchMode, FilterService } from "primereact/api";
 import * as Torrent from './Torrent';
 import { StatusGroup, StatusTable } from './Torrent';
