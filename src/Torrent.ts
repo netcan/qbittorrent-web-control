@@ -168,20 +168,22 @@ export interface PeersInfo {
     rid: number,
 };
 
-export enum FilePriority {
-    Mixed = -1,
-    DoNotDownload = 0,
-    Normal = 1,
-    High = 6,
-    Maximal = 7
-};
+export const FilePriority = {
+    DoNotDownload: 0,
+    Normal: 1,
+    High: 6,
+    Maximal: 7,
+    Mixed: -1,
+} as const;
+
+export type FilePriorityEnum = typeof FilePriority[keyof typeof FilePriority];
 
 export interface File {
     index: number;          // File index
     name: string;           // File name (including relative path)
     size: number;           // File size (bytes)
     progress: number;       // File progress (percentage/100)
-    priority: FilePriority; // File priority. See possible values here below
+    priority: FilePriorityEnum; // File priority. See possible values here below
     is_seed: boolean;       // True if file is seeding/complete
     piece_range: number[];  // The first number is the starting piece index and the second number is the ending piece index (inclusive)
     availability: number;   // Percentage of file pieces currently available (percentage/100)
@@ -244,7 +246,7 @@ export async function torrentFiles(hash: string, indexes?: string) {
     return await qbApiFetch('torrents', 'files',)<File[]>({ hash, indexes }) ?? [];
 }
 
-export async function setFilePrio(hash: string, ids: number[], priority: FilePriority) {
+export async function setFilePrio(hash: string, ids: number[], priority: FilePriorityEnum) {
     return await qbApiFetch('torrents', 'filePrio', 'POST')(
         { hash, id: ids.join('|'), priority }
     );

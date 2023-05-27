@@ -5,7 +5,7 @@
     > Mail: netcan1996@gmail.com
 ************************************************************************/
 
-import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer, File, FilePriority, torrentFiles, setFilePrio } from './Torrent';
+import { parseETA, torrentPeers, PieceState, Torrent, TorrentGenericProp, torrentsPieceStates, torrentsProperties, torrentsTrackers, Tracker, TrackerState, Peer, File, FilePriority, FilePriorityEnum, torrentFiles, setFilePrio } from './Torrent';
 import { TabView, TabPanel } from 'primereact/tabview';
 import {parseDuration, parseEpoch, parseSize, parseSpeed} from './Utils';
 import {useEffect, useState} from 'react';
@@ -16,9 +16,11 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode'
 import { TreeTable, TreeTableSelectionKeysType, TreeTableCheckboxSelectionKeyType, TreeTableSelectionEvent } from 'primereact/treetable';
 import { TreeNode } from "primereact/treenode";
 import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
+import { SelectItem, SelectItemOptionsType } from 'primereact/selectitem';
 import path from "path-browserify";
-import _ from 'lodash';
 import {Tree} from 'primereact/tree';
+import _ from 'lodash';
 
 interface TorrentPanelProp {
     detailTorrent: Torrent | null
@@ -241,7 +243,7 @@ class FolderData {
     availableSize: number = 0;
     progress: number = 0;
     hash: string;
-    priority: FilePriority | undefined = undefined;
+    priority: FilePriorityEnum | undefined = undefined;
     availability: number = 0;
     constructor(name: string, hash: string) {
         this.name = name;
@@ -326,6 +328,18 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
     }
     useEffect(updateFileTree, [detailTorrent, torrents]);
 
+    const setPrio = (node: TreeNode, prio: FilePriorityEnum) => {
+        const dfs = (node: TreeNode) => {
+            let res = node.data.index === -1 ? [] : [node.data.index];
+            for (const c of node.children ?? []) {
+                res.push(...dfs(c));
+            }
+            return res;
+        }
+        const ids = dfs(node);
+        setFilePrio(node.data.hash, ids, prio).then(updateFileTree);
+    }
+
     const parseField = (field: keyof FolderData, node: TreeNode) => {
         const content = node.data[field];
         switch (field) {
@@ -338,7 +352,21 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             case 'availability':
                 return `${(content * 100).toFixed(2)}%`;
             case 'priority':
-                return FilePriority[content];
+                let options: SelectItemOptionsType = [];
+                _.forOwn(FilePriority, (value, prio) => {
+                    options.push({
+                        label: prio,
+                        value,
+                        disabled: (value < 0),
+                    } as SelectItem);
+                })
+                const onChange = _.partial(setPrio, node);
+                return <Dropdown
+                    dataKey={node.key as string}
+                    value={content}
+                    options={options}
+                    onChange={e => onChange(e.value)}
+                />
             default:
                 return content;
         }
@@ -352,19 +380,6 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
         { field: 'availability', label: 'Availability' },
     ];
 
-    const onSelect = (node: TreeNode, selected: boolean) => {
-        const dfs = (node: TreeNode) => {
-            let res = node.data.index === -1 ? [] : [node.data.index];
-            for (const c of node.children ?? []) {
-                res.push(...dfs(c));
-            }
-            return res;
-        }
-        const ids = dfs(node);
-        setFilePrio(node.data.hash, ids, selected ? FilePriority.Normal : FilePriority.DoNotDownload)
-        .then(updateFileTree);
-    };
-
     return (
         <TreeTable
             value={fileTree}
@@ -374,8 +389,8 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             columnResizeMode='expand'
             selectionMode='checkbox'
             selectionKeys={selectedFiles}
-            onSelect={e => onSelect(e.node, true)}
-            onUnselect={e => onSelect(e.node, false)}
+            onSelect={e => setPrio(e.node, FilePriority.Normal)}
+            onUnselect={e => setPrio(e.node, FilePriority.DoNotDownload)}
         >
             { columns.map(column => (
                 <Column
