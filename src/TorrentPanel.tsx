@@ -237,6 +237,8 @@ class FolderData {
     index: number = -1;
     name: string;
     size: number = 0;
+    downloaded: number = 0;
+    availableSize: number = 0;
     progress: number = 0;
     hash: string;
     priority: FilePriority | undefined = undefined;
@@ -275,11 +277,12 @@ const getFileTree = (files: File[], hash: string): [TreeNode[], TreeTableSelecti
             }
             const data = folderData[next];
             data.size += file.size;
-            const childNum = (folderNodes[next].children ?? []).length;
-            data.progress = (data.progress * childNum + file.progress) / (childNum + 1);
+            data.downloaded += file.size * file.progress;
+            data.progress = data.downloaded / data.size;
 
             if (file.availability !== -1) {
-                data.availability += file.availability;
+                data.availableSize += file.availability * file.size;
+                data.availability = data.availableSize / data.size;
             }
 
             if (data.priority === undefined) {
@@ -292,7 +295,7 @@ const getFileTree = (files: File[], hash: string): [TreeNode[], TreeTableSelecti
             if (file.name === next) {
                 data.index = file.index;
                 selectedFiles[next].checked = isChecked;
-            } else {
+            } else { // folder
                 if (selectedFiles[next].checked !== isChecked) {
                     selectedFiles[next].checked = false;
                     selectedFiles[next].partialChecked = (data.priority !== FilePriority.DoNotDownload);
@@ -332,6 +335,8 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
                 return parseSize(content);
             case 'progress':
                 return (<ProgressBar value={(content * 100).toFixed(2)}/>);
+            case 'availability':
+                return `${(content * 100).toFixed(2)}%`;
             case 'priority':
                 return FilePriority[content];
             default:
