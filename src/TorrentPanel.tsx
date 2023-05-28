@@ -313,10 +313,21 @@ const getFileTree = (files: File[], hash: string): [TreeNode[], TreeTableSelecti
 const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => {
     const [fileTree, setFileTree] = useState<TreeNode[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<TreeTableSelectionKeysType | null>(null);;
+    const [expanded, setExpanded] = useState({});
+    const [lastTorrent, setLastTorrent] = useState<string>('');
+
     const updateFileTree = () => {
         detailTorrent && torrentFiles(detailTorrent.hash)
         .then((files) => {
             const [fileTree_, selectedFiles_] = getFileTree(files, detailTorrent.hash);
+            if (lastTorrent !== detailTorrent.hash) {
+                setLastTorrent(detailTorrent.hash);
+                const expanded_: Record<string, boolean> = {};
+                for (const file of fileTree_) {
+                    expanded_[file.key as string] = true;
+                }
+                setExpanded({...expanded, ...expanded_});
+            }
             if (!_.isEqual(fileTree, fileTree_)) {
                 setFileTree(fileTree_);
             }
@@ -386,6 +397,8 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             resizableColumns
             columnResizeMode='expand'
             selectionMode='checkbox'
+            expandedKeys={expanded}
+            onToggle={e => setExpanded(e.value)}
             selectionKeys={selectedFiles}
             onSelect={e => setPrio(e.node, FilePriority.Normal)}
             onUnselect={e => setPrio(e.node, FilePriority.DoNotDownload)}
