@@ -13,13 +13,12 @@ import { Divider } from 'primereact/divider';
 import TorrentTable from './TorrentTable';
 import { ProgressBar } from 'primereact/progressbar';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode'
-import { TreeTable, TreeTableSelectionKeysType, TreeTableCheckboxSelectionKeyType, TreeTableSelectionEvent } from 'primereact/treetable';
+import { TreeTable, TreeTableSelectionKeysType, TreeTableCheckboxSelectionKeyType } from 'primereact/treetable';
 import { TreeNode } from "primereact/treenode";
 import { Column } from 'primereact/column';
 import { Dropdown } from 'primereact/dropdown';
-import { SelectItem, SelectItemOptionsType } from 'primereact/selectitem';
+import { SelectItemOptionsType } from 'primereact/selectitem';
 import path from "path-browserify";
-import {Tree} from 'primereact/tree';
 import _ from 'lodash';
 
 interface TorrentPanelProp {
@@ -267,9 +266,9 @@ const getFileTree = (files: File[], hash: string): [TreeNode[], TreeTableSelecti
                 const folderItem: TreeNode = {
                     key: next,
                     data: folderData[next],
-                    children: []
+                    children: [],
                 };
-                if (folderPath === '') {
+                if (folderPath === '') { // root
                     fileTree.push(folderItem);
                 } else {
                     folderNodes[folderPath].children?.push(folderItem);
@@ -326,6 +325,7 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             }
         });
     }
+    // eslint-disable-next-line
     useEffect(updateFileTree, [detailTorrent, torrents]);
 
     const setPrio = (node: TreeNode, prio: FilePriorityEnum) => {
@@ -354,11 +354,8 @@ const TorrentFiles: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             case 'priority':
                 let options: SelectItemOptionsType = [];
                 _.forOwn(FilePriority, (value, prio) => {
-                    options.push({
-                        label: prio,
-                        value,
-                        disabled: (value < 0),
-                    } as SelectItem);
+                    options.push({ label: prio, value,
+                                   disabled: (value === FilePriority.Mixed) });
                 })
                 const onChange = _.partial(setPrio, node);
                 return <Dropdown
