@@ -186,7 +186,6 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
 
     const columns: { field: keyof Peer, label: string }[] = [
         { field: 'ip',           label: 'IP' },
-        { field: 'port',         label: 'Port' },
         { field: 'connection',   label: 'Connection' },
         { field: 'flags',        label: 'Flags' },
         { field: 'client',       label: 'Client' },
@@ -212,10 +211,12 @@ const TorrentPeers: React.FC<TorrentPanelProp> = ({detailTorrent, torrents}) => 
             case 'uploaded':
                 return parseSize(peer[field]);
             case 'ip':
+                const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
+                const ip = peer[field];
                 return (
                     <>
                         <span className='text-xl'> { getUnicodeFlagIcon(peer.country_code ?? '') } </span>
-                        { peer[field] }
+                        { ipv4Regex.test(ip) ? ip : `[${ip}]` }{':'}{ peer['port'] }
                     </>
                 );
             default:
