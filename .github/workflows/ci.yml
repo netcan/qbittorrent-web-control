@@ -20,15 +20,17 @@ jobs:
         id: compress
         with:
           command: c
-          cwd: ./
+          cwd: ./build
           files: |
-            ./build/
-          outPath: build.tar.gz
+            ./
+          outPath: build.tgz
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "build.tar.gz"
-          body: "build.tar.gz"
+          name: "latest build"
+          artifacts: "build.tgz"
+          allowUpdates: true
+          generateReleaseNotes: true
           token: ${{ secrets.GITHUB_TOKEN }}
           commit: "main"
           tag: "latest"
