@@ -7,7 +7,7 @@
 import {transferInfo} from "./Torrent";
 
 const StatusBar: React.FC = () => {
-    transferInfo().then(console.log);
+    transferInfo().then(console.log).catch(() => {})
     return (<> </>);
 }
 
