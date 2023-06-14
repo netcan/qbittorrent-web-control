@@ -17,6 +17,7 @@ import {createFilter} from './Utils';
 import TorrentPanel from './TorrentPanel';
 import _ from 'lodash';
 import Login from './Login';
+import StatusBar from './StatusBar';
 
 const MainWindow: React.FC = () => {
     const [torrents, setTorrents] = useState<Torrent[]>([]);
@@ -83,6 +84,7 @@ const MainWindow: React.FC = () => {
                         </Splitter>
                     </SplitterPanel>
                 </Splitter>
+                <StatusBar/>
             </div>
         </>
     );

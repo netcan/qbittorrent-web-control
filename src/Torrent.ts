@@ -189,12 +189,33 @@ export interface File {
     availability: number;   // Percentage of file pieces currently available (percentage/100)
 };
 
-type ApiName = 'torrents' | 'sync';
+export type ConnectStatus =
+    | "connected"
+    | "firewalled"
+    | "disconnected";
+
+export interface TransferInfo {
+    dl_info_speed: number;     // Global download rate (bytes/s)
+    dl_info_data: number;      // Data downloaded this session (bytes)
+    up_info_speed: number;     // Global upload rate (bytes/s)
+    up_info_data: number;      // Data uploaded this session (bytes)
+    dl_rate_limit: number;     // Download rate limit (bytes/s)
+    up_rate_limit: number;     // Upload rate limit (bytes/s)
+    dht_nodes: number;         // DHT nodes connected to
+    connection_status: ConnectStatus; // Connection status. See possible values here below
+    queueing?: boolean;               // True if torrent queueing is enabled
+    use_alt_speed_limits?: boolean;   // True if alternative speed limits are enabled
+    refresh_interval?: number;        // Transfer list refresh interval (milliseconds)
+};
+
+type ApiName = 'torrents' | 'sync' | 'transfer';
 type MethodName<T extends ApiName> =
     T extends 'torrents' ?
-    'info' | 'properties' | 'pieceStates' | 'trackers' | 'files' | 'filePrio':
+    'info' | 'properties' | 'pieceStates' | 'trackers' | 'files' | 'filePrio' :
     T extends 'sync' ?
-    'torrentPeers':
+    'torrentPeers' :
+    T extends 'transfer' ?
+    'info' :
     never;
 
 function qbApiFetch<A extends ApiName>(apiName: A, methodName: MethodName<A>, m: 'GET' | 'POST' = 'GET') {
@@ -239,17 +260,21 @@ export async function torrentsTrackers(hash: string) {
 }
 
 export async function torrentPeers(hash: string, rid?: number) {
-    return await qbApiFetch('sync', 'torrentPeers',)<PeersInfo>({ hash, rid });
+    return await qbApiFetch('sync', 'torrentPeers')<PeersInfo>({ hash, rid });
 }
 
 export async function torrentFiles(hash: string, indexes?: string) {
-    return await qbApiFetch('torrents', 'files',)<File[]>({ hash, indexes }) ?? [];
+    return await qbApiFetch('torrents', 'files')<File[]>({ hash, indexes }) ?? [];
 }
 
 export async function setFilePrio(hash: string, ids: number[], priority: FilePriorityEnum) {
     return await qbApiFetch('torrents', 'filePrio', 'POST')(
         { hash, id: ids.join('|'), priority }
     );
+}
+
+export async function transferInfo() {
+    return await qbApiFetch('transfer', 'info')<TransferInfo>();
 }
 
 export enum StatusGroup {
